@@ -1002,6 +1002,7 @@ Target: New users generate first prompt within 5 minutes. Measurement: Session t
 - Django Documentation: https://docs.djangoproject.com/
 - Bootstrap 5 Documentation: https://getbootstrap.com/docs/5.3/
 - GitHub REST API: https://docs.github.com/en/rest
+- GITHub Templates: https://github.com/DXCSithlordPadawan/BMAD_Forge/tree/main/bmad_forge/forge/templates
 
 ### 17.3 Change Log
 
