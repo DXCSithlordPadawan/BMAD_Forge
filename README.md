@@ -1,59 +1,137 @@
 # BMAD_Forge
-WEB application to help create BMAD prompts
-Plan for the creation of a Django-based web application called "BMAD Forge" that serves as a prompt engineering tool for generating BMAD (Breakthrough Method for Agile AI-Driven Development) Framework-compliant prompts.
 
-## Requirements:
+A Django-based web application called "BMAD Forge" that serves as a prompt engineering tool for generating BMAD (Breakthrough Method for Agile AI-Driven Development) Framework-compliant prompts.
 
-### 1. Framework Integration
-- Reference the BMAD-METHOD-v5 framework from: https://github.com/bmadcode/BMAD-METHOD-v5
-- Support BMAD agent roles: Analyst, PM, Architect, Scrum Master, Developer, QA, Orchestrator
-- Support BMAD workflow phases: Planning Phase, Development Phase
+## 🚀 Quick Start
 
-### 2. Template Management
-- Load templates from GitHub repository: https://github.com/DXCSithlordPadawan/training/tree/main/aitrg/templates
-- Support template variable syntax: {{VARIABLE_NAME}} and [VARIABLE_NAME]
-- Auto-detect agent role and workflow phase from template content
-- Store templates in database with metadata (title, agent_role, workflow_phase, remote_url)
+The web application is located in the `webapp/` directory. To get started:
 
-### 3. Core Features
-- Dashboard displaying template count and recent generated prompts
-- Template library with filtering by agent role and workflow phase
-- Dynamic form generation based on template variables
-- Prompt generation with variable substitution
-- BMAD compliance validation checking for:
-  - Required sections: ## Your Role, ## Input, ## Output Requirements
-  - Complete variable substitution (no unreplaced placeholders)
-- Copy to clipboard and download functionality
-- GitHub sync to import/update templates from remote repositories
+```bash
+cd webapp
+python -m venv venv
+source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python load_local_templates.py
+python manage.py runserver
+```
 
-### 4. Technical Stack
-- Backend: Python 3.11+, Django 5.x
-- Database: SQLite (MVP), PostgreSQL (production)
-- Frontend: Bootstrap 5, custom CSS (dark theme)
-- No user authentication required for MVP
-- Responsive design
+Then visit http://localhost:8000
 
-### 5. Database Models
-- Template: title, content, agent_role, workflow_phase, remote_url, last_updated, is_active
-- GeneratedPrompt: template (FK), input_data (JSON), final_output, is_valid, validation_notes, created_at
+📖 **For complete documentation, see [webapp/README_WEBAPP.md](webapp/README_WEBAPP.md)**
 
-### 6. Pages Required
-- Home/Dashboard
-- Template List (with filters)
-- Prompt Form (dynamic based on template)
-- Generated Prompt View (with validation status, copy/download)
-- GitHub Sync
+## 📋 Product Requirements
 
-### 7. Deliverables
-- Complete Django project structure
-- All models, views, forms, and templates
-- Database migrations
-- Sample BMAD templates pre-loaded
-- Unit tests or Playwright tests
-- README with setup and deployment instructions
+This application implements the specifications defined in [BMAD_PRD.md](BMAD_PRD.md).
 
-## Success Criteria:
-- Users can browse available templates organized by agent and phase
-- Users can fill dynamic forms to generate BMAD-compliant prompts
-- Generated prompts are validated against BMAD structural requirements
-- Prompts can be copied or downloaded for use in AI coding assistants
+## ✨ Features
+
+### Core Functionality
+- **Dashboard** - Overview with statistics and quick actions
+- **Template Library** - Browse and filter 15+ BMAD templates by agent role and workflow phase
+- **Dynamic Forms** - Auto-generated input forms based on template variables
+- **Prompt Generation** - Variable substitution with validation
+- **BMAD Compliance** - Automated validation for required sections
+- **History Management** - Track and review generated prompts
+- **GitHub Sync** - Import templates from remote repositories
+
+### Supported BMAD Elements
+
+### Supported BMAD Elements
+
+**Agent Roles:**
+- Orchestrator - Coordination and oversight
+- Analyst - Requirements and data analysis  
+- Project Manager - Planning and tracking
+- Architect - System design and architecture
+- Scrum Master - Agile process facilitation
+- Developer - Implementation and coding
+- QA Engineer - Testing and quality assurance
+
+**Workflow Phases:**
+- Planning Phase - Requirements, analysis, estimation
+- Development Phase - Implementation, testing, deployment
+
+## 🏗️ Architecture
+
+### Technical Stack
+- **Backend**: Django 5.x, Python 3.11+
+- **Frontend**: Bootstrap 5, vanilla JavaScript
+- **Database**: SQLite (development), PostgreSQL (production)
+- **External Services**: GitHub API for template synchronization
+
+### Project Structure
+```
+BMAD_Forge/
+├── BMAD_PRD.md           # Product requirements document
+├── README.md             # This file
+├── bmad_forge/           # Original development version
+└── webapp/              # Production web application ⭐
+    ├── README_WEBAPP.md  # Detailed setup guide
+    ├── manage.py
+    ├── requirements.txt
+    ├── bmad_forge/      # Django project config
+    ├── forge/           # Main application
+    └── tests/           # Test suite
+```
+
+## 📚 Documentation
+
+- **[webapp/README_WEBAPP.md](webapp/README_WEBAPP.md)** - Complete setup and usage guide
+- **[BMAD_PRD.md](BMAD_PRD.md)** - Detailed product requirements
+- **[BMAD Framework](https://github.com/bmadcode/BMAD-METHOD-v5)** - Framework methodology
+
+## 🎯 Use Cases
+
+1. **Generate BMAD-Compliant Prompts** - Create structured prompts for AI coding assistants
+2. **Template Management** - Organize and maintain reusable prompt templates
+3. **Team Standardization** - Ensure consistent prompt quality across development teams
+4. **GitHub Integration** - Sync templates from organizational repositories
+
+## 🛠️ Development
+
+### Prerequisites
+- Python 3.11 or higher
+- pip package manager
+- Git
+
+### Local Development Setup
+```bash
+cd webapp
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python load_local_templates.py
+python manage.py runserver
+```
+
+### Running Tests
+```bash
+cd webapp
+pytest
+```
+
+## 🚢 Deployment
+
+The application supports standard Django deployment patterns:
+- Docker containerization
+- WSGI/ASGI server deployment
+- PostgreSQL for production database
+- Static file serving via CDN
+
+See [webapp/README_WEBAPP.md](webapp/README_WEBAPP.md) for detailed deployment instructions.
+
+## 📝 License
+
+This project is part of the BMAD Framework ecosystem.
+
+## 🙏 Acknowledgments
+
+- [BMAD Framework](https://github.com/bmadcode/BMAD-METHOD-v5) for the methodology
+- [Django](https://www.djangoproject.com/) for the web framework
+- [Bootstrap 5](https://getbootstrap.com/) for UI components
+
+---
+
+**Status**: ✅ Web application fully functional and ready for use
