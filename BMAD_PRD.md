@@ -737,7 +737,7 @@ GitHub API rate limits (5,000 requests/hour for authenticated requests) are resp
 
 **File Processing**
 
-Template files are identified by extension (.md, .txt, .template). Files are fetched using GitHub Contents API with base64 decoding. Content is parsed and validated before database storage.
+Template files are identified by extension (.md, .txt, .template). Files are fetched using GitHub Contents API with base64 decoding or from the local stored template folder. Content is parsed and validated before database storage.
 
 **Change Detection**
 
