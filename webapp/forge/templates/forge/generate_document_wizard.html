@@ -172,7 +172,7 @@
                                        class="form-control bg-dark text-light border-secondary variable-input" 
                                        id="var_{{ var }}" 
                                        name="var_{{ var }}"
-                                       value="{{ section_data|default_if_none:'' }}"
+                                       value=""
                                        placeholder="Enter value for {{ var }}"
                                        data-variable="{{ var }}"
                                        required>
@@ -190,7 +190,7 @@
                                       id="section_content" 
                                       name="section_content" 
                                       rows="6"
-                                      placeholder="Enter your content for the {{ current_section.section_name }} section...">{{ section_data|default_if_none:'' }}</textarea>
+                                      placeholder="Enter your content for the {{ current_section.section_name }} section..."></textarea>
                             <div class="form-text text-muted">
                                 Add your specific content for this section. The original template content will be preserved.
                             </div>
