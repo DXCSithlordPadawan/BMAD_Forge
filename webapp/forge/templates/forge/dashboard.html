@@ -139,22 +139,22 @@
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{% url 'forge:github_sync' %}" class="btn btn-outline-success w-100 py-3">
+                            <a href="{% url 'forge:generate_document_select' %}" class="btn btn-outline-success w-100 py-3">
+                                <i class="bi bi-file-earmark-text fs-2 d-block mb-2"></i>
+                                Generate Document
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'forge:github_sync' %}" class="btn btn-outline-info w-100 py-3">
                                 <i class="bi bi-arrow-repeat fs-2 d-block mb-2"></i>
                                 Sync from GitHub
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{% url 'forge:prompt_history' %}" class="btn btn-outline-info w-100 py-3">
+                            <a href="{% url 'forge:prompt_history' %}" class="btn btn-outline-warning w-100 py-3">
                                 <i class="bi bi-clock-history fs-2 d-block mb-2"></i>
                                 View History
                             </a>
-                        </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-outline-warning w-100 py-3" disabled>
-                                <i class="bi bi-star fs-2 d-block mb-2"></i>
-                                Favorites
-                            </button>
                         </div>
                     </div>
                 </div>

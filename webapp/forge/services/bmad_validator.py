@@ -210,7 +210,7 @@ class BMADValidator:
         
         # 8. Check for variable usage (good practice)
         variable_count = len(TemplateParser.extract_variables(prompt_content))
-        if variable_count > 0 and len(unreplaced_variables) == 0:
+        if variable_count > 0 and len(unreplaced) == 0:
             report.score += 10  # Bonus for using variables properly
         
         # 9. Optional sections bonus

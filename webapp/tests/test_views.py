@@ -222,3 +222,106 @@ class TestPromptHistoryView:
         content = response.content.decode()
         
         assert 'Test' in content
+
+
+@pytest.mark.django_db
+class TestGenerateDocumentSelectView:
+    """Tests for the document generation selection view."""
+    
+    def test_generate_document_select_loads(self, client):
+        """Test generate document selection page loads."""
+        response = client.get(reverse('forge:generate_document_select'))
+        
+        assert response.status_code == 200
+        assert 'Generate Document' in response.content.decode()
+    
+    def test_generate_document_select_shows_templates(self, client):
+        """Test that templates are displayed for selection."""
+        Template.objects.create(
+            title='Test Template',
+            content='## Your Role\nTest role',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        
+        response = client.get(reverse('forge:generate_document_select'))
+        content = response.content.decode()
+        
+        assert 'Test Template' in content
+
+
+@pytest.mark.django_db
+class TestGenerateDocumentWizardView:
+    """Tests for the document generation wizard view."""
+    
+    def test_wizard_view_loads(self, client):
+        """Test wizard view loads for a template."""
+        template = Template.objects.create(
+            title='Wizard Template',
+            content='## Your Role\nYou are a developer.\n\n## Input\nTask description.\n\n## Output Requirements\nFormat specs.',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        
+        response = client.get(reverse('forge:generate_document_wizard', args=[template.id]))
+        
+        assert response.status_code == 200
+        assert 'Wizard Template' in response.content.decode()
+    
+    def test_wizard_shows_steps(self, client):
+        """Test wizard displays section steps."""
+        template = Template.objects.create(
+            title='Multi-Section Template',
+            content='## Section One\nContent one.\n\n## Section Two\nContent two.',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        
+        response = client.get(reverse('forge:generate_document_wizard', args=[template.id]))
+        content = response.content.decode()
+        
+        assert 'Section One' in content or 'Step' in content
+    
+    def test_wizard_navigation_next(self, client):
+        """Test navigating to next step in wizard."""
+        template = Template.objects.create(
+            title='Nav Template',
+            content='## Section One\nContent one.\n\n## Section Two\nContent two.',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        
+        response = client.post(
+            reverse('forge:generate_document_wizard', args=[template.id]),
+            {'current_step': 1, 'action': 'next', 'section_content': 'Test content'}
+        )
+        
+        assert response.status_code == 302
+        assert '?step=2' in response.url
+    
+    def test_wizard_generates_document(self, client):
+        """Test wizard generates document on final step."""
+        template = Template.objects.create(
+            title='Generate Template',
+            content='## Your Role\nYou are a developer.\n\n## Input\nTask description.\n\n## Output Requirements\nFormat specs.',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        
+        # First, set up session data by navigating through steps
+        session = client.session
+        session[f'doc_gen_{template.id}'] = {
+            'Your Role': 'Test role content',
+            'Input': 'Test input content',
+            'Output Requirements': 'Test output content',
+        }
+        session.save()
+        
+        response = client.post(
+            reverse('forge:generate_document_wizard', args=[template.id]) + '?step=3',
+            {'current_step': 3, 'action': 'generate', 'section_content': 'Final content'}
+        )
+        
+        # Should redirect to prompt result
+        assert response.status_code == 302
+        assert GeneratedPrompt.objects.filter(template=template).exists()

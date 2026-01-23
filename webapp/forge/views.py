@@ -2,15 +2,17 @@
 Views for BMAD Forge application.
 """
 
+import json
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, DetailView, FormView, TemplateView
+from django.views.generic import ListView, DetailView, FormView, TemplateView, View
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.contrib import messages
 from django.conf import settings
 from django.db import models
+from django.views.decorators.http import require_http_methods
 from .models import Template, GeneratedPrompt
 from .forms import DynamicPromptForm, TemplateFilterForm, GitHubSyncForm
-from .services import GitHubSyncService, BMADValidator
+from .services import GitHubSyncService, BMADValidator, DocumentGenerator
 
 
 class DashboardView(TemplateView):
@@ -137,18 +139,18 @@ class PromptFormView(FormView):
             template=template,
             input_data=form.cleaned_data,
             final_output=final_output,
-            is_valid=validation_report['is_valid'],
-            validation_notes=validation_report.get('notes', []),
-            missing_variables=validation_report.get('unreplaced_variables', []),
+            is_valid=validation_report.is_valid,
+            validation_notes=validation_report.notes,
+            missing_variables=validation_report.unreplaced_variables,
         )
         
         # Add messages
-        if validation_report['is_valid']:
+        if validation_report.is_valid:
             messages.success(self.request, 'Prompt generated successfully!')
         else:
             messages.warning(
                 self.request,
-                f'Prompt generated with {len(validation_report.get("issues", []))} issues'
+                f'Prompt generated with {len(validation_report.results)} issues'
             )
         
         return redirect('forge:prompt_result', pk=generated_prompt.id)
@@ -285,3 +287,205 @@ def health_check(request):
         'app': settings.APP_NAME,
         'version': settings.APP_VERSION,
     })
+
+
+class GenerateDocumentSelectView(ListView):
+    """
+    View for selecting a template to generate a document from.
+    """
+    
+    model = Template
+    template_name = 'forge/generate_document_select.html'
+    context_object_name = 'templates'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        queryset = Template.objects.filter(is_active=True)
+        
+        # Apply filters
+        agent_role = self.request.GET.get('agent_role')
+        workflow_phase = self.request.GET.get('workflow_phase')
+        search = self.request.GET.get('search')
+        
+        if agent_role:
+            queryset = queryset.filter(agent_role=agent_role)
+        if workflow_phase:
+            queryset = queryset.filter(workflow_phase=workflow_phase)
+        if search:
+            queryset = queryset.filter(
+                models.Q(title__icontains=search) |
+                models.Q(description__icontains=search) |
+                models.Q(content__icontains=search)
+            )
+        
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter_form'] = TemplateFilterForm(self.request.GET)
+        context['agent_roles'] = settings.BMAD_AGENT_ROLES
+        context['workflow_phases'] = settings.BMAD_WORKFLOW_PHASES
+        return context
+
+
+class GenerateDocumentWizardView(TemplateView):
+    """
+    Wizard view for interactive document generation.
+    Presents template sections one at a time and collects user input.
+    """
+    
+    template_name = 'forge/generate_document_wizard.html'
+    
+    def get_template_object(self):
+        template_id = self.kwargs.get('template_id')
+        return get_object_or_404(Template, id=template_id, is_active=True)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        template = self.get_template_object()
+        
+        # Get wizard steps from DocumentGenerator
+        wizard_steps = DocumentGenerator.get_wizard_steps(template.content)
+        
+        # Get current step from query param
+        current_step = int(self.request.GET.get('step', 1))
+        current_step = max(1, min(current_step, len(wizard_steps)))
+        
+        context['template'] = template
+        context['wizard_steps'] = wizard_steps
+        context['current_step'] = current_step
+        context['total_steps'] = len(wizard_steps)
+        
+        if wizard_steps:
+            context['current_section'] = wizard_steps[current_step - 1]
+        
+        # Get stored section data from session
+        session_key = f'doc_gen_{template.id}'
+        context['section_data'] = self.request.session.get(session_key, {})
+        
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        template = self.get_template_object()
+        wizard_steps = DocumentGenerator.get_wizard_steps(template.content)
+        
+        current_step = int(request.POST.get('current_step', 1))
+        action = request.POST.get('action', 'next')
+        
+        # Store section data in session
+        session_key = f'doc_gen_{template.id}'
+        section_data = request.session.get(session_key, {})
+        
+        # Get current section name
+        if wizard_steps and 1 <= current_step <= len(wizard_steps):
+            current_section = wizard_steps[current_step - 1]
+            section_name = current_section['section_name']
+            
+            # Store the section content
+            section_content = request.POST.get('section_content', '')
+            section_data[section_name] = section_content
+            
+            # Store variable values
+            for var in current_section.get('variables', []):
+                var_value = request.POST.get(f'var_{var}', '')
+                section_data[f'var_{var}'] = var_value
+            
+            request.session[session_key] = section_data
+        
+        # Handle navigation
+        if action == 'prev' and current_step > 1:
+            return redirect(f"{request.path}?step={current_step - 1}")
+        elif action == 'next' and current_step < len(wizard_steps):
+            return redirect(f"{request.path}?step={current_step + 1}")
+        elif action == 'generate':
+            # Generate the final document
+            return self._generate_document(request, template, section_data, wizard_steps)
+        
+        return redirect(f"{request.path}?step={current_step}")
+    
+    def _generate_document(self, request, template, section_data, wizard_steps):
+        """Generate the final document and create a GeneratedPrompt record."""
+        # Separate section content from variable data
+        variable_data = {}
+        section_content = {}
+        
+        for key, value in section_data.items():
+            if key.startswith('var_'):
+                var_name = key[4:]  # Remove 'var_' prefix
+                variable_data[var_name] = value
+            else:
+                section_content[key] = value
+        
+        # Generate the document
+        final_output, validations = DocumentGenerator.generate_document(
+            template.content,
+            section_content,
+            variable_data
+        )
+        
+        # Validate for BMAD compliance
+        compliance_report = DocumentGenerator.validate_document_compliance(final_output)
+        
+        # Also run the existing BMADValidator for comprehensive validation
+        bmad_report = BMADValidator.validate(final_output)
+        
+        # Create the GeneratedPrompt record
+        generated_prompt = GeneratedPrompt.objects.create(
+            template=template,
+            input_data={
+                'sections': section_content,
+                'variables': variable_data,
+            },
+            final_output=final_output,
+            is_valid=compliance_report['is_compliant'] and bmad_report.is_valid,
+            validation_notes=compliance_report['warnings'] + compliance_report['issues'],
+            missing_variables=compliance_report['unreplaced_variables'],
+        )
+        
+        # Clear session data
+        session_key = f'doc_gen_{template.id}'
+        if session_key in request.session:
+            del request.session[session_key]
+        
+        # Add messages
+        if generated_prompt.is_valid:
+            messages.success(request, 'Document generated successfully with full BMAD compliance!')
+        else:
+            issue_count = len(compliance_report['issues'])
+            messages.warning(
+                request,
+                f'Document generated with {issue_count} validation issue(s). Review and fix as needed.'
+            )
+        
+        return redirect('forge:prompt_result', pk=generated_prompt.id)
+
+
+def validate_section_realtime(request, template_id):
+    """
+    API endpoint for real-time section validation.
+    Returns validation results as JSON for immediate feedback.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        section_name = data.get('section_name', '')
+        content = data.get('content', '')
+        
+        # Perform real-time validation
+        validation = DocumentGenerator.validate_section_content(section_name, content)
+        
+        return JsonResponse({
+            'is_valid': validation.is_valid,
+            'section_name': validation.section_name,
+            'issues': validation.issues,
+            'warnings': validation.warnings,
+            'suggestions': validation.suggestions,
+            'unreplaced_variables': validation.unreplaced_variables,
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
