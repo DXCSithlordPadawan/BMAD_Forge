@@ -1,0 +1,403 @@
+{% extends 'forge/base.html' %}
+
+{% block title %}Generate Document: {{ template.title }} - BMAD Forge{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .wizard-progress {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    .wizard-progress::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #495057;
+        z-index: 0;
+    }
+    .wizard-step {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+    }
+    .wizard-step .step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #495057;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    .wizard-step.active .step-number {
+        background: #0d6efd;
+    }
+    .wizard-step.completed .step-number {
+        background: #198754;
+    }
+    .wizard-step .step-label {
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+        text-align: center;
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .validation-feedback {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        display: none;
+    }
+    .validation-feedback.show {
+        display: block;
+    }
+    .validation-feedback.is-valid {
+        background: rgba(25, 135, 84, 0.2);
+        border: 1px solid #198754;
+    }
+    .validation-feedback.has-issues {
+        background: rgba(220, 53, 69, 0.2);
+        border: 1px solid #dc3545;
+    }
+    .validation-feedback.has-warnings {
+        background: rgba(255, 193, 7, 0.2);
+        border: 1px solid #ffc107;
+    }
+    .section-preview {
+        max-height: 200px;
+        overflow-y: auto;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'forge:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'forge:generate_document_select' %}">Generate Document</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ template.title }}</li>
+                </ol>
+            </nav>
+            
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h2 class="mb-2">
+                        <i class="bi bi-magic me-2"></i>Generate: {{ template.title }}
+                    </h2>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-secondary">{{ template.agent_role|upper }}</span>
+                        <span class="badge bg-dark border">{{ template.workflow_phase|title }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Indicator -->
+            {% if total_steps > 1 %}
+            <div class="card bg-dark border-secondary mb-4">
+                <div class="card-body">
+                    <div class="wizard-progress">
+                        {% for step in wizard_steps %}
+                        <div class="wizard-step {% if step.step_number < current_step %}completed{% elif step.step_number == current_step %}active{% endif %}">
+                            <span class="step-number">
+                                {% if step.step_number < current_step %}
+                                <i class="bi bi-check"></i>
+                                {% else %}
+                                {{ step.step_number }}
+                                {% endif %}
+                            </span>
+                            <span class="step-label text-muted">{{ step.section_name|truncatechars:15 }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center">
+                        <span class="text-muted">Step {{ current_step }} of {{ total_steps }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Current Section Form -->
+            <form method="post" id="sectionForm">
+                {% csrf_token %}
+                <input type="hidden" name="current_step" value="{{ current_step }}">
+                
+                <div class="card bg-dark border-secondary mb-4">
+                    <div class="card-header bg-secondary bg-opacity-25">
+                        <h5 class="mb-0">
+                            <i class="bi bi-hash me-2"></i>{{ current_section.section_name }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Section Description -->
+                        {% if current_section.description %}
+                        <div class="alert alert-info bg-info bg-opacity-10 border-info mb-4">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Section Description:</strong>
+                            <p class="mb-0 mt-2">{{ current_section.description }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Variables for this section -->
+                        {% if current_section.variables %}
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">
+                                <i class="bi bi-code-slash me-2"></i>Variables to Fill
+                            </h6>
+                            {% for var in current_section.variables %}
+                            <div class="mb-3">
+                                <label for="var_{{ var }}" class="form-label">
+                                    {{ var|cut:"_"|title }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control bg-dark text-light border-secondary variable-input" 
+                                       id="var_{{ var }}" 
+                                       name="var_{{ var }}"
+                                       value=""
+                                       placeholder="Enter value for {{ var }}"
+                                       data-variable="{{ var }}"
+                                       required>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Section Content Input -->
+                        <div class="mb-3">
+                            <label for="section_content" class="form-label">
+                                <i class="bi bi-pencil me-2"></i>Your Content for This Section
+                            </label>
+                            <textarea class="form-control bg-dark text-light border-secondary" 
+                                      id="section_content" 
+                                      name="section_content" 
+                                      rows="6"
+                                      placeholder="Enter your content for the {{ current_section.section_name }} section..."></textarea>
+                            <div class="form-text text-muted">
+                                Add your specific content for this section. The original template content will be preserved.
+                            </div>
+                        </div>
+                        
+                        <!-- Real-time Validation Feedback -->
+                        <div id="validationFeedback" class="validation-feedback">
+                            <div id="validationContent"></div>
+                        </div>
+                        
+                        <!-- Original Section Content Preview -->
+                        {% if current_section.original_content %}
+                        <div class="mt-4">
+                            <h6 class="text-muted mb-2">
+                                <i class="bi bi-file-text me-2"></i>Original Template Content (Preview)
+                            </h6>
+                            <div class="bg-black p-3 rounded section-preview">
+                                <pre class="mb-0 text-muted small"><code>{{ current_section.original_content }}</code></pre>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-footer bg-transparent border-secondary">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                {% if current_step > 1 %}
+                                <button type="submit" name="action" value="prev" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-1"></i>Previous
+                                </button>
+                                {% else %}
+                                <a href="{% url 'forge:generate_document_select' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-lg me-1"></i>Cancel
+                                </a>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% if current_step < total_steps %}
+                                <button type="submit" name="action" value="next" class="btn btn-primary">
+                                    Next<i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                                {% else %}
+                                <button type="submit" name="action" value="generate" class="btn btn-success">
+                                    <i class="bi bi-magic me-1"></i>Generate Document
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Section Navigation -->
+            {% if total_steps > 1 %}
+            <div class="card bg-dark border-secondary">
+                <div class="card-header bg-secondary bg-opacity-25">
+                    <h6 class="mb-0"><i class="bi bi-list-ul me-2"></i>All Sections</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for step in wizard_steps %}
+                        <div class="list-group-item bg-dark d-flex justify-content-between align-items-center 
+                                    {% if step.step_number == current_step %}border-primary{% else %}border-secondary{% endif %}">
+                            <div>
+                                <span class="badge {% if step.step_number < current_step %}bg-success{% elif step.step_number == current_step %}bg-primary{% else %}bg-secondary{% endif %} me-2">
+                                    {{ step.step_number }}
+                                </span>
+                                {{ step.section_name }}
+                            </div>
+                            {% if step.step_number < current_step %}
+                            <span class="badge bg-success">
+                                <i class="bi bi-check"></i> Done
+                            </span>
+                            {% elif step.step_number == current_step %}
+                            <span class="badge bg-primary">Current</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Pending</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sectionContent = document.getElementById('section_content');
+    const validationFeedback = document.getElementById('validationFeedback');
+    const validationContent = document.getElementById('validationContent');
+    const templateId = {{ template.id }};
+    const sectionName = "{{ current_section.section_name|escapejs }}";
+    
+    let validationTimeout = null;
+    
+    // Real-time validation function
+    function validateContent() {
+        const content = sectionContent.value;
+        
+        // Also collect variable values
+        const variables = document.querySelectorAll('.variable-input');
+        let fullContent = content;
+        variables.forEach(input => {
+            const varName = input.dataset.variable;
+            const varValue = input.value;
+            if (varValue) {
+                fullContent = fullContent.replace(new RegExp('\\{\\{' + varName + '\\}\\}', 'g'), varValue);
+                fullContent = fullContent.replace(new RegExp('\\[' + varName + '\\]', 'g'), varValue);
+            }
+        });
+        
+        fetch(`/generate-document/${templateId}/validate/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                section_name: sectionName,
+                content: fullContent
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayValidation(data);
+        })
+        .catch(error => {
+            console.error('Validation error:', error);
+        });
+    }
+    
+    // Display validation results
+    function displayValidation(data) {
+        validationFeedback.classList.remove('is-valid', 'has-issues', 'has-warnings');
+        
+        let html = '';
+        
+        if (data.issues && data.issues.length > 0) {
+            validationFeedback.classList.add('has-issues');
+            html += '<div class="text-danger mb-2"><strong><i class="bi bi-x-circle me-1"></i>Issues:</strong></div>';
+            html += '<ul class="mb-2">';
+            data.issues.forEach(issue => {
+                html += `<li class="text-danger small">${issue}</li>`;
+            });
+            html += '</ul>';
+        }
+        
+        if (data.unreplaced_variables && data.unreplaced_variables.length > 0) {
+            validationFeedback.classList.add('has-issues');
+            html += '<div class="text-danger mb-2"><strong><i class="bi bi-exclamation-triangle me-1"></i>Unreplaced Variables:</strong></div>';
+            html += '<div class="mb-2">';
+            data.unreplaced_variables.forEach(v => {
+                html += `<span class="badge bg-danger me-1">${v}</span>`;
+            });
+            html += '</div>';
+        }
+        
+        if (data.warnings && data.warnings.length > 0) {
+            if (!validationFeedback.classList.contains('has-issues')) {
+                validationFeedback.classList.add('has-warnings');
+            }
+            html += '<div class="text-warning mb-2"><strong><i class="bi bi-exclamation-triangle me-1"></i>Warnings:</strong></div>';
+            html += '<ul class="mb-2">';
+            data.warnings.forEach(warning => {
+                html += `<li class="text-warning small">${warning}</li>`;
+            });
+            html += '</ul>';
+        }
+        
+        if (data.suggestions && data.suggestions.length > 0) {
+            html += '<div class="text-info mb-2"><strong><i class="bi bi-lightbulb me-1"></i>Suggestions:</strong></div>';
+            html += '<ul class="mb-0">';
+            data.suggestions.forEach(suggestion => {
+                html += `<li class="text-info small">${suggestion}</li>`;
+            });
+            html += '</ul>';
+        }
+        
+        if (data.is_valid && !data.warnings?.length && !data.suggestions?.length) {
+            validationFeedback.classList.add('is-valid');
+            html = '<div class="text-success"><i class="bi bi-check-circle me-2"></i>Content looks good!</div>';
+        }
+        
+        validationContent.innerHTML = html;
+        validationFeedback.classList.add('show');
+    }
+    
+    // Add event listeners for real-time validation
+    if (sectionContent) {
+        sectionContent.addEventListener('input', function() {
+            clearTimeout(validationTimeout);
+            validationTimeout = setTimeout(validateContent, 500);
+        });
+    }
+    
+    // Also validate when variable inputs change
+    document.querySelectorAll('.variable-input').forEach(input => {
+        input.addEventListener('input', function() {
+            clearTimeout(validationTimeout);
+            validationTimeout = setTimeout(validateContent, 500);
+        });
+    });
+});
+</script>
+{% endblock extra_js %}

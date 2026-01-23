@@ -254,3 +254,138 @@ More details here.
         
         assert service.token == 'test-token'
         assert 'Authorization' in service.headers
+
+
+class TestDocumentGenerator:
+    """Tests for the DocumentGenerator service."""
+    
+    def test_extract_sections(self):
+        """Test extracting sections from template content."""
+        from forge.services import DocumentGenerator
+        
+        content = """# Document Title
+
+## Section One
+Content for section one.
+
+## Section Two
+Content for section two.
+
+### Subsection
+More content here.
+"""
+        sections = DocumentGenerator.extract_sections(content)
+        
+        assert len(sections) >= 3
+        section_names = [s.name for s in sections]
+        assert 'Document Title' in section_names
+        assert 'Section One' in section_names
+        assert 'Section Two' in section_names
+    
+    def test_validate_section_content_valid(self):
+        """Test section validation with valid content."""
+        from forge.services import DocumentGenerator
+        
+        result = DocumentGenerator.validate_section_content(
+            "Your Role",
+            "You are an experienced software developer with responsibility for implementing features."
+        )
+        
+        assert result.is_valid is True
+        assert len(result.unreplaced_variables) == 0
+    
+    def test_validate_section_content_with_unreplaced_variables(self):
+        """Test section validation detects unreplaced variables (100% detection requirement)."""
+        from forge.services import DocumentGenerator
+        
+        result = DocumentGenerator.validate_section_content(
+            "Input",
+            "Process the {{file_name}} and analyze the [data_source]."
+        )
+        
+        assert result.is_valid is False
+        assert 'file_name' in result.unreplaced_variables
+        assert 'data_source' in result.unreplaced_variables
+    
+    def test_validate_section_content_short_content(self):
+        """Test section validation warns about short content."""
+        from forge.services import DocumentGenerator
+        
+        result = DocumentGenerator.validate_section_content(
+            "Context",
+            "Brief."
+        )
+        
+        # Should have warnings about short content
+        assert len(result.warnings) > 0
+    
+    def test_get_wizard_steps(self):
+        """Test generating wizard steps from template content."""
+        from forge.services import DocumentGenerator
+        
+        content = """## Your Role
+You are a developer.
+
+## Input
+Task description.
+
+## Output Requirements
+Format specifications.
+"""
+        steps = DocumentGenerator.get_wizard_steps(content)
+        
+        assert len(steps) == 3
+        assert steps[0]['section_name'] == 'Your Role'
+        assert steps[1]['section_name'] == 'Input'
+        assert steps[2]['section_name'] == 'Output Requirements'
+    
+    def test_validate_document_compliance_valid(self):
+        """Test document compliance validation with valid content."""
+        from forge.services import DocumentGenerator
+        
+        content = """## Your Role
+You are an experienced software developer.
+
+## Input
+Build a user authentication system.
+
+## Output Requirements
+Provide complete source code with tests.
+"""
+        report = DocumentGenerator.validate_document_compliance(content)
+        
+        assert report['is_compliant'] is True
+        assert len(report['missing_sections']) == 0
+        assert len(report['unreplaced_variables']) == 0
+    
+    def test_validate_document_compliance_missing_sections(self):
+        """Test document compliance validation detects missing sections."""
+        from forge.services import DocumentGenerator
+        
+        content = """## Your Role
+Just a partial document.
+"""
+        report = DocumentGenerator.validate_document_compliance(content)
+        
+        assert report['is_compliant'] is False
+        assert '## Input' in report['missing_sections']
+        assert '## Output Requirements' in report['missing_sections']
+    
+    def test_validate_document_compliance_unreplaced_variables(self):
+        """Test document compliance validation detects unreplaced variables (100% detection)."""
+        from forge.services import DocumentGenerator
+        
+        content = """## Your Role
+You are {{role_name}}.
+
+## Input
+Process {{input_data}}.
+
+## Output Requirements
+Return formatted output.
+"""
+        report = DocumentGenerator.validate_document_compliance(content)
+        
+        assert report['is_compliant'] is False
+        assert 'role_name' in report['unreplaced_variables']
+        assert 'input_data' in report['unreplaced_variables']

@@ -41,6 +41,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'generate_document_select' or request.resolver_match.url_name == 'generate_document_wizard' %}active{% endif %}" 
+                           href="{% url 'forge:generate_document_select' %}">
+                            <i class="bi bi-file-earmark-text me-1"></i>Generate Document
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'prompt_history' %}active{% endif %}" 
                            href="{% url 'forge:prompt_history' %}">
                             <i class="bi bi-clock-history me-1"></i>History
