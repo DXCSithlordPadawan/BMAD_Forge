@@ -536,7 +536,7 @@ Include sample requests and responses for each endpoint.
 
 ### Adding Templates to the System
 
-Templates can be added in two ways:
+Templates can be added in three ways:
 
 1. **GitHub Sync**: Place templates in your GitHub repository and sync them using the GitHub Synchronization feature (see Section 9).
 
