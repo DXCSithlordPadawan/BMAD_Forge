@@ -21,7 +21,7 @@ DEFAULT_CONFIG = {
         'github': {
             'repository': 'DXCSithlordPadawan/BMAD_Forge',
             'branch': 'main',
-            'remote_path': 'aitrg/templates',
+            'remote_path': 'webapp/forge/templates',
         },
         'sync': {
             'overwrite_existing': True,
@@ -177,7 +177,7 @@ def get_template_github_branch() -> str:
 
 def get_template_github_path() -> str:
     """Get the remote path for templates in GitHub."""
-    return ConfigLoader.get('templates.github.remote_path', 'aitrg/templates')
+    return ConfigLoader.get('templates.github.remote_path', 'webapp/forge/templates')
 
 
 def get_sync_overwrite_existing() -> bool:

@@ -545,7 +545,7 @@ class GitHubSyncService:
         # Get repository settings from config
         repo = getattr(settings, 'TEMPLATE_GITHUB_REPO', None) or settings.TEMPLATE_REPO
         branch = getattr(settings, 'TEMPLATE_GITHUB_BRANCH', 'main')
-        remote_path = getattr(settings, 'TEMPLATE_GITHUB_PATH', 'aitrg/templates')
+        remote_path = getattr(settings, 'TEMPLATE_GITHUB_PATH', 'webapp/forge/templates')
         
         # Parse template repo
         repo_parts = repo.split('/')

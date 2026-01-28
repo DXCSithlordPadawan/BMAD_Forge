@@ -222,7 +222,7 @@ class GitHubSyncView(FormView):
         """Set initial values from settings."""
         return {
             'repo_url': f"https://github.com/{settings.TEMPLATE_REPO}",
-            'path': 'aitrg/templates',
+            'path': 'webapp/forge/templates',
         }
     
     def form_valid(self, form):
