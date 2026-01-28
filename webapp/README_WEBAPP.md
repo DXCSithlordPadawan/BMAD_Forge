@@ -115,7 +115,42 @@ Generated prompts are validated for:
 
 ## Configuration
 
+### Configuration File (config.yaml)
+
+BMAD Forge uses a `config.yaml` file for easy configuration. Edit this file to customize application settings without modifying code.
+
+```yaml
+# BMAD Forge Configuration File
+application:
+  version: "1.1.0"
+  name: "BMAD Forge"
+
+templates:
+  # Local templates directory (relative to webapp folder)
+  local_path: "forge/templates/agents"
+  
+  # GitHub repository settings for template synchronization
+  github:
+    repository: "DXCSithlordPadawan/BMAD_Forge"
+    branch: "main"
+    remote_path: "aitrg/templates"
+  
+  # Template sync behavior
+  sync:
+    overwrite_existing: true  # Overwrite existing templates during sync
+    match_by: "title"         # Match templates by title (alternative: remote_path)
+```
+
+**Key Features:**
+- **Easy to Edit**: Simple YAML format for configuration changes
+- **Version Control**: Track application version in config file
+- **Template Locations**: Configure where templates are stored and synced from
+- **Sync Behavior**: Control how template synchronization handles existing templates
+- **Recursive Search**: Template sync recursively searches configured folder and all subfolders
+
 ### Environment Variables
+
+Environment variables can override config.yaml settings:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -123,7 +158,9 @@ Generated prompts are validated for:
 | `SECRET_KEY` | Django secret key | Auto-generated |
 | `ALLOWED_HOSTS` | Comma-separated allowed hosts | `localhost,127.0.0.1` |
 | `GITHUB_TOKEN` | GitHub personal access token | (empty) |
-| `TEMPLATE_REPO` | Repository for templates | `DXCSithlordPadawan/BMAD_Forge` |
+| `APP_VERSION` | Override application version | config.yaml value |
+| `APP_NAME` | Override application name | config.yaml value |
+| `TEMPLATE_REPO` | Override GitHub repository | config.yaml value |
 
 ### Database Configuration
 
@@ -135,12 +172,14 @@ For MVP, BMAD Forge uses SQLite by default (no configuration needed). For produc
 webapp/
 ├── manage.py              # Django management script
 ├── requirements.txt       # Python dependencies
+├── config.yaml           # Application configuration file
 ├── .env.example          # Environment variables template
 ├── .gitignore            # Git ignore patterns
 ├── README.md             # Quick start guide
 ├── README_WEBAPP.md      # This file
 ├── load_local_templates.py  # Script to load templates
 ├── bmad_forge/           # Project configuration
+│   ├── config.py        # Configuration loader
 │   ├── settings.py       # Django settings
 │   ├── urls.py          # Root URL configuration
 │   └── wsgi.py          # WSGI application
@@ -164,6 +203,7 @@ webapp/
     ├── test_models.py
     ├── test_views.py
     ├── test_services.py
+    ├── test_config.py   # Configuration tests
     └── test_template_simulation.py  # Template simulation tests
 ```
 

@@ -84,14 +84,60 @@ http://localhost:8000
 After starting the server, sync templates from GitHub:
 
 1. Navigate to the Sync page (`/sync/`)
-2. Enter the repository URL (or use the default)
+2. Enter the repository URL (or use the default from config.yaml)
 3. Click "Sync Templates"
 
-Default repository: `DXCSithlordPadawan/training` (path: `aitrg/templates`)
+**Template Sync Behavior:**
+- Templates are synced recursively from the configured folder and all subfolders
+- When a template already exists (matched by title), it is overwritten ensuring only one version shows
+- Configure sync behavior in `config.yaml` under `templates.sync`
+
+Default repository: `DXCSithlordPadawan/BMAD_Forge` (path: `aitrg/templates`)
 
 ## Configuration
 
+### Configuration File (config.yaml)
+
+BMAD Forge uses a `config.yaml` file for easy configuration of application settings. This file is located in the `webapp/` directory.
+
+```yaml
+# BMAD Forge Configuration File
+application:
+  version: "1.1.0"
+  name: "BMAD Forge"
+
+templates:
+  # Local templates directory
+  local_path: "forge/templates/agents"
+  
+  # GitHub repository settings
+  github:
+    repository: "DXCSithlordPadawan/BMAD_Forge"
+    branch: "main"
+    remote_path: "aitrg/templates"
+  
+  # Sync behavior
+  sync:
+    overwrite_existing: true  # Overwrites existing templates during sync
+    match_by: "title"         # Match templates by title (alternative: remote_path)
+```
+
+**Key Configuration Options:**
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `application.version` | Application version number | `1.0.0` |
+| `application.name` | Application display name | `BMAD Forge` |
+| `templates.local_path` | Local template directory path | `forge/templates/agents` |
+| `templates.github.repository` | GitHub repo for templates | `DXCSithlordPadawan/BMAD_Forge` |
+| `templates.github.branch` | Git branch to sync from | `main` |
+| `templates.github.remote_path` | Path within repo for templates | `aitrg/templates` |
+| `templates.sync.overwrite_existing` | Overwrite existing templates on sync | `true` |
+| `templates.sync.match_by` | Field to match templates (`title` or `remote_path`) | `title` |
+
 ### Environment Variables
+
+Environment variables override config.yaml settings when set:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -99,7 +145,9 @@ Default repository: `DXCSithlordPadawan/training` (path: `aitrg/templates`)
 | `SECRET_KEY` | Django secret key | Auto-generated |
 | `ALLOWED_HOSTS` | Comma-separated allowed hosts | `localhost,127.0.0.1` |
 | `GITHUB_TOKEN` | GitHub personal access token | (empty) |
-| `TEMPLATE_REPO` | Repository for templates | `DXCSithlordPadawan/training` |
+| `APP_VERSION` | Overrides config.yaml version | - |
+| `APP_NAME` | Overrides config.yaml app name | - |
+| `TEMPLATE_REPO` | Overrides config.yaml repository | - |
 
 ### Database Configuration
 
@@ -124,9 +172,11 @@ DATABASES = {
 bmad_forge/
 ├── manage.py
 ├── requirements.txt
+├── config.yaml               # Application configuration file
 ├── .env.example
 ├── README.md
 ├── bmad_forge/           # Project configuration
+│   ├── config.py         # Configuration loader
 │   ├── settings.py
 │   ├── urls.py
 │   └── wsgi.py
@@ -149,6 +199,7 @@ bmad_forge/
     ├── test_models.py
     ├── test_views.py
     ├── test_services.py
+    ├── test_config.py    # Configuration tests
     └── test_template_simulation.py
 ```
 
