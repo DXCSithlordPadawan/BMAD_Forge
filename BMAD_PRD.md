@@ -1,7 +1,8 @@
 # BMAD Forge - Product Requirements Document (PRD)
 
-**Document Version:** 1.0  
+**Document Version:** 1.1  
 **Created:** January 2026  
+**Last Updated:** January 2026  
 **Status:** Draft/Final  
 **Author:** Product Team  
 
@@ -221,6 +222,109 @@ Users must be able to download generated prompts as text files. Downloaded files
 
 **FR-ES-003: URL Sharing**  
 The system should support sharing of generated prompts via unique URLs. Shared URLs must be accessible to users without authentication and should display the prompt content and validation results.
+
+### 5.7 Template Creation and Multi-Role Support
+
+This section defines requirements for creating templates and associating them with BMAD agent roles.
+
+**FR-TC-001: YAML Frontmatter Parsing**  
+The system must parse YAML frontmatter delimited by `---` markers at the beginning of template files. Frontmatter must support fields including `name`, `description`, `role`, `roles`, `workflow_phase`, `version`, `category`, and `tags`. The system must gracefully handle malformed or missing frontmatter.
+
+**FR-TC-002: Single Role Association**  
+Templates must support association with a single BMAD agent role using the `role` field in frontmatter. The role field must accept valid role identifiers: `orchestrator`, `analyst`, `pm`, `architect`, `scrum_master`, `developer`, `qa`.
+
+**FR-TC-003: Multiple Role Association**  
+Templates must support association with multiple BMAD agent roles using the `roles` field in frontmatter. The `roles` field must accept a YAML list of valid role identifiers. The first role in the list is considered the primary role for filtering and display purposes.
+
+**FR-TC-004: Role Auto-Detection**  
+When no explicit roles are specified in frontmatter, the system must attempt to auto-detect the role using:
+1. Filename patterns (e.g., `developer_`, `architect_`, `qa_` prefixes)
+2. Content analysis of the `## Your Role` section
+3. Default to `developer` if no role can be detected
+
+**FR-TC-005: Workflow Phase Detection**  
+When no explicit workflow phase is specified in frontmatter, the system must attempt to auto-detect the phase using:
+1. Filename patterns (e.g., `_planning`, `_development` suffixes)
+2. Content analysis for phase-specific keywords
+3. Default to `development` if no phase can be detected
+
+**FR-TC-006: Template Role Display**  
+Templates with multiple roles must display all associated role badges in the template library. The primary role (first in the `roles` list) must be prominently displayed, with secondary roles shown as additional badges.
+
+**FR-TC-007: Multi-Role Filtering**  
+Templates must be filterable by any of their associated roles. When filtering by a specific role, templates that include that role in their `roles` list must appear in results, regardless of whether it is the primary role.
+
+**FR-TC-008: Template Database Model**  
+The Template model must store both:
+- `agent_role`: The primary role (CharField) for backward compatibility and efficient filtering
+- `agent_roles`: The complete list of roles (JSONField) for multi-role support
+
+### 5.8 Generate Document Wizard
+
+This section defines requirements for the interactive document generation wizard feature.
+
+**FR-DW-001: Section-Based Wizard**  
+The system must provide an interactive wizard that guides users through creating a document section-by-section. Each section of the template must be presented as a separate step in the wizard.
+
+**FR-DW-002: Wizard Navigation**  
+Users must be able to navigate forward and backward through wizard steps. A progress indicator must show the current step and total number of steps. Users must be able to jump to any previously completed step.
+
+**FR-DW-003: Section Content Entry**  
+Each wizard step must display:
+- The section name and description
+- Input fields for any variables within that section
+- A content textarea for additional user-provided content
+- The original template content for reference
+
+**FR-DW-004: Session Persistence**  
+User input data must be persisted in the session during wizard progression. Users must be able to navigate between steps without losing previously entered data. Session data must be cleared upon successful document generation.
+
+**FR-DW-005: Generate Document Action**  
+Upon completing all wizard steps, users must be able to generate the final document. The system must combine template content with user-provided variable values and section content. The generated document must be validated and stored in the database.
+
+**FR-DW-006: Template Selection Interface**  
+The wizard must include a template selection interface with the same filtering capabilities as the main template library (agent role, workflow phase, search).
+
+### 5.9 Real-time Validation
+
+This section defines requirements for the real-time validation feature during document generation.
+
+**FR-RV-001: Immediate Validation Feedback**  
+The system must provide immediate validation feedback as users enter content in the document wizard. Validation must occur without page reload using asynchronous requests.
+
+**FR-RV-002: Unreplaced Variable Detection**  
+The system must detect unreplaced template variables (`{{VAR}}` or `[VAR]` syntax) in real-time with 100% detection rate. Detected unreplaced variables must be clearly highlighted and listed.
+
+**FR-RV-003: Content Length Warnings**  
+The system must warn users when section content appears too short (fewer than 10 words). Warnings must be advisory and not prevent document generation.
+
+**FR-RV-004: Content Quality Suggestions**  
+The system must provide contextual suggestions based on section type:
+- Role sections: Suggest including responsibilities or objectives
+- Input sections: Suggest specifying what inputs are provided
+- Output sections: Suggest specifying expected output format
+
+**FR-RV-005: Validation Status Indicators**  
+The system must display clear validation status indicators:
+- ✅ Green: Content looks good, no issues detected
+- ⚠️ Yellow: Warnings detected (e.g., short content)
+- ❌ Red: Issues that need attention (e.g., unreplaced variables)
+
+**FR-RV-006: API Endpoint for Validation**  
+The system must provide a JSON API endpoint for real-time section validation. The endpoint must accept section name and content, and return validation results including issues, warnings, suggestions, and unreplaced variables.
+
+**FR-RV-007: Final Compliance Check**  
+Upon document generation, the system must perform a final BMAD compliance check including:
+- Verification of all required sections (## Your Role, ## Input, ## Output Requirements)
+- Detection of any remaining unreplaced variables
+- Compliance score calculation
+
+**FR-RV-008: Validation Targets**  
+The validation system must achieve:
+- 95% compliance rate for prompts generated through the platform
+- 100% detection rate for missing required sections
+- 100% detection rate for unreplaced template variables
+- Less than 5% false positive rate for validation warnings
 
 ---
 
@@ -1009,6 +1113,7 @@ Target: New users generate first prompt within 5 minutes. Measurement: Session t
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-01-15 | Product Team | Initial document creation |
+| 1.1 | 2026-01-28 | Product Team | Added FR-TC (Template Creation and Multi-Role Support), FR-DW (Generate Document Wizard), and FR-RV (Real-time Validation) functional requirements |
 
 ---
 

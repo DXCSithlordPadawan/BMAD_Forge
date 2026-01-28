@@ -14,7 +14,8 @@
 7. [BMAD Validation](#7-bmad-validation)
 8. [History Management](#8-history-management)
 9. [GitHub Synchronization](#9-github-synchronization)
-10. [Frequently Asked Questions](#10-frequently-asked-questions)
+10. [Creating Templates](#10-creating-templates)
+11. [Frequently Asked Questions](#11-frequently-asked-questions)
 
 ---
 
@@ -315,7 +316,247 @@ The sync feature recursively searches all subfolders for templates, making it ea
 
 ---
 
-## 10. Frequently Asked Questions
+## 10. Creating Templates
+
+This section explains how to create custom BMAD templates and configure role associations.
+
+### Template File Format
+
+Templates are Markdown files (`.md`) that contain:
+1. Optional YAML frontmatter for metadata
+2. BMAD-compliant sections with variable placeholders
+
+### YAML Frontmatter
+
+The recommended way to create a template is to include YAML frontmatter at the beginning of the file. This frontmatter is delimited by `---` markers:
+
+```yaml
+---
+name: my-template-name
+description: Brief description of what this template does
+role: developer
+workflow_phase: development
+version: "1.0"
+---
+
+# Template content starts here...
+```
+
+### Available Frontmatter Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | Yes | Unique identifier for the template |
+| `description` | Yes | Brief description of template purpose |
+| `roles` | Recommended | List of BMAD roles that can use this template |
+| `role` | Alternative | Single BMAD role (use `roles` for multiple) |
+| `workflow_phase` | Recommended | Either `planning` or `development` |
+| `version` | Optional | Template version (e.g., "1.0", "2.0") |
+| `category` | Optional | Category for organization |
+| `tags` | Optional | List of tags for searchability |
+
+### Associating a Template with a Single Role
+
+For templates that are specific to one role, use the `role` field:
+
+```yaml
+---
+name: backend-implementation
+description: Template for backend feature implementation
+role: developer
+workflow_phase: development
+---
+
+## Your Role
+
+You are a senior backend developer responsible for implementing server-side features.
+
+## Input
+
+You will receive:
+- Feature requirements: {{FEATURE_REQUIREMENTS}}
+- Technical specifications: {{TECHNICAL_SPECS}}
+
+## Output Requirements
+
+Provide:
+- Implementation code
+- Unit tests
+- API documentation
+```
+
+### Associating a Template with Multiple Roles
+
+Many templates can be useful for multiple roles. Use the `roles` field (note the plural) with a list:
+
+```yaml
+---
+name: technical-design-document
+description: Comprehensive technical design specification
+roles:
+  - architect
+  - developer
+workflow_phase: development
+version: "2.0"
+---
+
+## Your Role
+
+Act as a technical architect or senior developer creating detailed design specifications.
+
+## Input
+
+You will receive:
+- Requirements documentation: {{REQUIREMENTS}}
+- System constraints: {{CONSTRAINTS}}
+
+## Output Requirements
+
+Your output will include:
+- System architecture diagrams
+- Component specifications
+- Implementation guidelines
+```
+
+### How Multiple Roles Work
+
+When a template has multiple roles configured:
+
+1. **Primary Role**: The first role in the `roles` list is considered the primary role. This is used for filtering and display purposes.
+
+2. **Role Filtering**: The template will appear when filtering by any of its associated roles.
+
+3. **Role Display**: All associated roles are displayed as badges on the template card.
+
+4. **Backward Compatibility**: If you use the singular `role` field, it is automatically converted to a single-item `roles` list.
+
+### Available Roles
+
+| Role ID | Display Name | Description |
+|---------|--------------|-------------|
+| `orchestrator` | Orchestrator | Coordinates overall workflow and agent interactions |
+| `analyst` | Analyst | Performs analysis and research tasks |
+| `pm` | Project Manager | Manages product planning and requirements |
+| `architect` | Architect | Designs system architecture and technical specifications |
+| `scrum_master` | Scrum Master | Manages sprints, backlogs, and release planning |
+| `developer` | Developer | Implements frontend, backend, DevOps, and UX solutions |
+| `qa` | QA Engineer | Handles testing, security analysis, and quality assurance |
+
+### Available Workflow Phases
+
+| Phase ID | Display Name | Description |
+|----------|--------------|-------------|
+| `planning` | Planning Phase | Requirements gathering, architecture design, and task planning |
+| `development` | Development Phase | Implementation, testing, and deployment |
+
+### Auto-Detection (Fallback)
+
+If no explicit roles are specified in the frontmatter, the system will attempt to auto-detect the role based on:
+
+1. **Filename patterns**: Keywords like `developer`, `architect`, `qa`, `pm` in the filename
+2. **Content analysis**: Examining the `## Your Role` section for role indicators
+3. **Default**: If no role can be detected, defaults to `developer`
+
+### Template Structure Requirements
+
+All templates must include these required BMAD sections:
+
+1. **## Your Role** - Defines who the AI should act as
+2. **## Input** - Specifies what information is being provided
+3. **## Output Requirements** - Describes expected output format
+
+### Variable Syntax
+
+Templates support two variable syntaxes:
+- Double braces: `{{VARIABLE_NAME}}`
+- Square brackets: `[VARIABLE_NAME]`
+
+Example:
+```markdown
+## Input
+
+- Project name: {{PROJECT_NAME}}
+- Feature description: [FEATURE_DESCRIPTION]
+- Technical stack: {{TECH_STACK}}
+```
+
+### Complete Template Example
+
+Here's a complete example of a multi-role template:
+
+```yaml
+---
+name: api-design-document
+description: API design and documentation template for architects and developers
+roles:
+  - architect
+  - developer
+workflow_phase: development
+version: "1.0"
+category: documentation
+tags:
+  - api
+  - design
+  - rest
+---
+
+## Your Role
+
+You are an experienced API designer responsible for creating comprehensive API specifications that balance developer experience with system performance.
+
+## Input
+
+You will receive:
+- Service name: {{SERVICE_NAME}}
+- Business requirements: {{BUSINESS_REQUIREMENTS}}
+- Target consumers: {{TARGET_CONSUMERS}}
+- Authentication requirements: {{AUTH_REQUIREMENTS}}
+
+## Output Requirements
+
+Your output must include:
+1. **API Overview**: High-level description of the API
+2. **Endpoint Definitions**: RESTful endpoint specifications
+3. **Request/Response Schemas**: JSON schemas for all payloads
+4. **Authentication**: Authentication and authorization details
+5. **Error Handling**: Standard error response formats
+6. **Rate Limiting**: Rate limiting policies
+
+## Context
+
+Consider these factors when designing the API:
+- Backward compatibility requirements
+- Performance constraints
+- Security best practices
+
+## Examples
+
+Include sample requests and responses for each endpoint.
+```
+
+### Adding Templates to the System
+
+Templates can be added in two ways:
+
+1. **GitHub Sync**: Place templates in your GitHub repository and sync them using the GitHub Synchronization feature (see Section 9).
+
+2. **Local Files**: Add template files directly to the `forge/templates/agents/` directory.
+
+3. **Django Admin**: Use the Django admin interface at `/admin/` to manually create templates.
+
+### Best Practices
+
+1. **Use `roles` for multi-role templates**: When a template can be used by multiple roles, always use the `roles` list field
+2. **Order roles by relevance**: Put the primary/most relevant role first in the `roles` list
+3. **Keep roles consistent**: Use the exact role IDs defined in Available Roles
+4. **Include workflow_phase**: Helps organize templates by development stage
+5. **Use descriptive names**: The `name` field should clearly identify the template's purpose
+6. **Add version information**: Track template versions for change management
+7. **Write clear descriptions**: Help users understand when to use each template
+
+---
+
+## 11. Frequently Asked Questions
 
 ### General Questions
 
