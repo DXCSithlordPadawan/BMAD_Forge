@@ -114,7 +114,7 @@ The Generate Document feature provides step-by-step document creation:
 - **Real-time validation**: Immediate feedback as you type
 - **Progress tracking**: Visual progress indicator showing completed/remaining steps
 - **Variable management**: Fill in required variables with validation
-- **Content suggestions**: AI-powered suggestions for improving content
+- **Content suggestions**: Rule-based suggestions for improving content based on section type
 
 ### BMAD Validation
 
