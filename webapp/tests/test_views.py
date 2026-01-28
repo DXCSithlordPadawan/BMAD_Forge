@@ -101,6 +101,83 @@ class TestTemplateListView:
         content = response.content.decode()
         
         assert 'Authentication Template' in content
+    
+    def test_template_filter_by_role_with_multi_roles(self, client):
+        """Test filtering templates by role when templates have multiple roles."""
+        # Create a template with multiple roles where 'architect' is secondary
+        Template.objects.create(
+            title='Multi-Role Template',
+            content='test',
+            agent_role='developer',
+            agent_roles=['developer', 'architect'],
+            workflow_phase='development',
+        )
+        # Create a template with only architect role
+        Template.objects.create(
+            title='Architect Only',
+            content='test',
+            agent_role='architect',
+            workflow_phase='planning',
+        )
+        # Create a template with no architect role
+        Template.objects.create(
+            title='QA Only',
+            content='test',
+            agent_role='qa',
+            workflow_phase='development',
+        )
+        
+        # Filter by architect - should show both templates with architect role
+        response = client.get(reverse('forge:template_list') + '?agent_role=architect')
+        content = response.content.decode()
+        
+        assert 'Multi-Role Template' in content
+        assert 'Architect Only' in content
+        assert 'QA Only' not in content
+    
+    def test_template_filter_multi_role_shows_all_roles_in_display(self, client):
+        """Test that templates display all their roles in the template list."""
+        Template.objects.create(
+            title='Multi-Role Display Test',
+            content='test',
+            agent_role='developer',
+            agent_roles=['developer', 'architect', 'qa'],
+            workflow_phase='development',
+        )
+        
+        response = client.get(reverse('forge:template_list'))
+        content = response.content.decode()
+        
+        # Check that all roles are displayed
+        assert 'DEVELOPER' in content
+        assert 'ARCHITECT' in content
+        assert 'QA' in content
+
+
+@pytest.mark.django_db
+class TestDashboardMultiRoles:
+    """Tests for multi-role support in the dashboard."""
+    
+    def test_dashboard_counts_templates_by_all_roles(self, client):
+        """Test that dashboard counts templates for all their roles."""
+        # Create a template with multiple roles
+        Template.objects.create(
+            title='Multi-Role Template',
+            content='test',
+            agent_role='developer',
+            agent_roles=['developer', 'architect'],
+            workflow_phase='development',
+        )
+        
+        response = client.get(reverse('forge:dashboard'))
+        
+        # The template should be counted for both developer and architect
+        context = response.context
+        templates_by_role = context.get('templates_by_role', {})
+        
+        # Both roles should have a count of 1
+        assert templates_by_role.get('developer', 0) >= 1
+        assert templates_by_role.get('architect', 0) >= 1
 
 
 @pytest.mark.django_db

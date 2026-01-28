@@ -32,13 +32,23 @@ class DashboardView(TemplateView):
         return context
     
     def _get_templates_by_role(self):
-        """Get template counts grouped by agent role."""
-        return dict(
-            Template.objects.filter(is_active=True)
-            .values('agent_role')
-            .annotate(count=models.Count('id'))
-            .values_list('agent_role', 'count')
-        )
+        """Get template counts grouped by agent role.
+        
+        Counts templates for each role, considering that templates can have
+        multiple roles stored in the agent_roles JSONField.
+        """
+        from collections import Counter
+        
+        templates = Template.objects.filter(is_active=True)
+        role_counts = Counter()
+        
+        for template in templates:
+            # Use the get_roles_list() method which handles both agent_role 
+            # and agent_roles fields
+            for role in template.get_roles_list():
+                role_counts[role] += 1
+        
+        return dict(role_counts)
     
     def _get_templates_by_phase(self):
         """Get template counts grouped by workflow phase."""
@@ -68,8 +78,6 @@ class TemplateListView(ListView):
         workflow_phase = self.request.GET.get('workflow_phase')
         search = self.request.GET.get('search')
         
-        if agent_role:
-            queryset = queryset.filter(agent_role=agent_role)
         if workflow_phase:
             queryset = queryset.filter(workflow_phase=workflow_phase)
         if search:
@@ -78,6 +86,9 @@ class TemplateListView(ListView):
                 models.Q(description__icontains=search) |
                 models.Q(content__icontains=search)
             )
+        
+        # Filter by role - handles multi-role templates using the custom manager
+        queryset = Template.objects.filter_by_role(queryset, agent_role)
         
         return queryset
     
@@ -339,8 +350,6 @@ class GenerateDocumentSelectView(ListView):
         workflow_phase = self.request.GET.get('workflow_phase')
         search = self.request.GET.get('search')
         
-        if agent_role:
-            queryset = queryset.filter(agent_role=agent_role)
         if workflow_phase:
             queryset = queryset.filter(workflow_phase=workflow_phase)
         if search:
@@ -349,6 +358,9 @@ class GenerateDocumentSelectView(ListView):
                 models.Q(description__icontains=search) |
                 models.Q(content__icontains=search)
             )
+        
+        # Filter by role - handles multi-role templates using the custom manager
+        queryset = Template.objects.filter_by_role(queryset, agent_role)
         
         return queryset
     
