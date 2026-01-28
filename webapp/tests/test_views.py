@@ -152,6 +152,82 @@ class TestTemplateListView:
         assert 'DEVELOPER' in content
         assert 'ARCHITECT' in content
         assert 'QA' in content
+    
+    def test_template_filter_by_workflow_phase(self, client):
+        """Test filtering templates by workflow phase."""
+        Template.objects.create(
+            title='Planning Template',
+            content='test',
+            agent_role='pm',
+            workflow_phase='planning',
+        )
+        Template.objects.create(
+            title='Development Template',
+            content='test',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        
+        # Filter by planning phase
+        response = client.get(reverse('forge:template_list') + '?workflow_phase=planning')
+        content = response.content.decode()
+        
+        assert 'Planning Template' in content
+        assert 'Development Template' not in content
+    
+    def test_template_filter_by_workflow_phase_development(self, client):
+        """Test filtering templates by development workflow phase."""
+        Template.objects.create(
+            title='Planning Template',
+            content='test',
+            agent_role='pm',
+            workflow_phase='planning',
+        )
+        Template.objects.create(
+            title='Development Template',
+            content='test',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        
+        # Filter by development phase
+        response = client.get(reverse('forge:template_list') + '?workflow_phase=development')
+        content = response.content.decode()
+        
+        assert 'Development Template' in content
+        assert 'Planning Template' not in content
+    
+    def test_template_filter_combined_role_and_workflow(self, client):
+        """Test filtering templates by both agent role and workflow phase."""
+        # Developer in planning phase
+        Template.objects.create(
+            title='Dev Planning',
+            content='test',
+            agent_role='developer',
+            workflow_phase='planning',
+        )
+        # Developer in development phase
+        Template.objects.create(
+            title='Dev Development',
+            content='test',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        # PM in planning phase
+        Template.objects.create(
+            title='PM Planning',
+            content='test',
+            agent_role='pm',
+            workflow_phase='planning',
+        )
+        
+        # Filter by developer AND planning
+        response = client.get(reverse('forge:template_list') + '?agent_role=developer&workflow_phase=planning')
+        content = response.content.decode()
+        
+        assert 'Dev Planning' in content
+        assert 'Dev Development' not in content
+        assert 'PM Planning' not in content
 
 
 @pytest.mark.django_db

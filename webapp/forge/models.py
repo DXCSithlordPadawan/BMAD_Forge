@@ -10,7 +10,7 @@ import re
 
 
 class TemplateManager(models.Manager):
-    """Custom manager for Template model with multi-role filtering support."""
+    """Custom manager for Template model with multi-role and workflow filtering support."""
     
     def filter_by_role(self, queryset, role):
         """
@@ -34,6 +34,21 @@ class TemplateManager(models.Manager):
             if template.has_role(role)
         ]
         return queryset.filter(id__in=matching_ids)
+    
+    def filter_by_workflow(self, queryset, workflow_phase):
+        """
+        Filter templates by workflow phase.
+        
+        Args:
+            queryset: The queryset to filter
+            workflow_phase: The workflow phase to filter by (e.g., 'planning', 'development')
+            
+        Returns:
+            Filtered queryset containing templates with the specified workflow phase
+        """
+        if not workflow_phase:
+            return queryset
+        return queryset.filter(workflow_phase=workflow_phase)
 
 
 class Template(models.Model):

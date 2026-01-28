@@ -213,38 +213,65 @@ During loading, the system:
 2. Falls back to auto-detection if not specified
 3. Stores both the primary role (`agent_role`) and all roles (`agent_roles`) in the database
 
-## Querying Templates by Role
+## Querying Templates by Role and Workflow Phase
 
-Once loaded, templates can be queried by role:
+Once loaded, templates can be queried using the TemplateManager's filtering methods:
 
 ```python
 # In Django/Python
 from forge.models import Template
 from django.db.models import Q
 
-# Method 1: Use primary role field (works on all databases)
-architect_templates = Template.objects.filter(agent_role='architect')
+# =============================
+# ROLE FILTERING
+# =============================
 
-# Method 2: Use helper method for checking multiple roles (works on all databases)
-# Filter in Python after fetching templates
+# Method 1: Use the custom filter_by_role manager method (recommended)
+# This handles multi-role templates correctly
+queryset = Template.objects.filter(is_active=True)
+architect_templates = Template.objects.filter_by_role(queryset, 'architect')
+
+# Method 2: Use primary role field (only matches primary role)
+architect_primary_only = Template.objects.filter(agent_role='architect')
+
+# Method 3: Use helper method for checking multiple roles
 all_templates = Template.objects.all()
 architect_usable = [t for t in all_templates if t.has_role('architect')]
 
-# Method 3: JSONField contains lookup (PostgreSQL recommended)
-# Note: This syntax works best with PostgreSQL. For SQLite, consider Method 1 or 2.
+# Method 4: JSONField contains lookup (PostgreSQL recommended)
+# Note: This syntax works best with PostgreSQL. For SQLite, consider Method 1.
 architect_templates = Template.objects.filter(agent_roles__contains=['architect'])
 
-# Get templates where architect is the primary role
-primary_architect = Template.objects.filter(agent_role='architect')
+# =============================
+# WORKFLOW PHASE FILTERING
+# =============================
 
-# Get all planning phase templates
+# Use the custom filter_by_workflow manager method (recommended)
+queryset = Template.objects.filter(is_active=True)
+planning_templates = Template.objects.filter_by_workflow(queryset, 'planning')
+development_templates = Template.objects.filter_by_workflow(queryset, 'development')
+
+# Direct filtering (alternative)
 planning_templates = Template.objects.filter(workflow_phase='planning')
 
-# Combined filter - templates usable by PM in planning phase
+# =============================
+# COMBINED FILTERING
+# =============================
+
+# Combine role and workflow phase filters
+queryset = Template.objects.filter(is_active=True)
+queryset = Template.objects.filter_by_workflow(queryset, 'planning')
+queryset = Template.objects.filter_by_role(queryset, 'pm')
+# Result: PM templates in the planning phase
+
 # Using primary role (database-agnostic):
 pm_planning = Template.objects.filter(agent_role='pm', workflow_phase='planning')
 
-# Check if a template has a specific role using helper method
+# =============================
+# HELPER METHODS
+# =============================
+
+# Check if a template has a specific role
 template = Template.objects.first()
 if template.has_role('architect'):
     print(f"{template.title} can be used by architects")
@@ -256,16 +283,17 @@ print(template.get_roles_display())  # e.g., "Architect, Developer"
 roles = template.get_roles_list()  # e.g., ['architect', 'developer']
 ```
 
-> **Database Compatibility Note**: The `agent_roles__contains` lookup works best with PostgreSQL. For SQLite or other databases, use the `agent_role` field for filtering or use the `has_role()` helper method after fetching templates.
+> **Database Compatibility Note**: The `agent_roles__contains` lookup works best with PostgreSQL. For SQLite or other databases, use the `filter_by_role()` manager method or use the `has_role()` helper method after fetching templates.
 
 ## Database Model
 
-The Template model has two role-related fields:
+The Template model has fields for both role and workflow phase filtering:
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `agent_role` | CharField | Primary role (for backward compatibility and filtering) |
 | `agent_roles` | JSONField | List of all roles that can use this template |
+| `workflow_phase` | CharField | Workflow phase (planning or development) |
 
 The `agent_role` field always contains the first/primary role, while `agent_roles` contains the complete list of roles.
 

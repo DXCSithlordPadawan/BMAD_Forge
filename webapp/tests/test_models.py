@@ -122,6 +122,137 @@ class TestTemplateModel:
 
 
 @pytest.mark.django_db
+class TestTemplateManagerFiltering:
+    """Tests for the TemplateManager filtering methods."""
+    
+    def test_filter_by_workflow_returns_matching_templates(self):
+        """Test filter_by_workflow returns only templates in specified phase."""
+        Template.objects.create(
+            title='Planning Template',
+            content='test',
+            agent_role='pm',
+            workflow_phase='planning',
+        )
+        Template.objects.create(
+            title='Development Template',
+            content='test',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        
+        queryset = Template.objects.filter(is_active=True)
+        filtered = Template.objects.filter_by_workflow(queryset, 'planning')
+        
+        assert filtered.count() == 1
+        assert filtered.first().title == 'Planning Template'
+    
+    def test_filter_by_workflow_with_empty_value(self):
+        """Test filter_by_workflow returns all templates when workflow is empty."""
+        Template.objects.create(
+            title='Planning Template',
+            content='test',
+            agent_role='pm',
+            workflow_phase='planning',
+        )
+        Template.objects.create(
+            title='Development Template',
+            content='test',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        
+        queryset = Template.objects.filter(is_active=True)
+        filtered = Template.objects.filter_by_workflow(queryset, '')
+        
+        assert filtered.count() == 2
+    
+    def test_filter_by_workflow_with_none_value(self):
+        """Test filter_by_workflow returns all templates when workflow is None."""
+        Template.objects.create(
+            title='Planning Template',
+            content='test',
+            agent_role='pm',
+            workflow_phase='planning',
+        )
+        Template.objects.create(
+            title='Development Template',
+            content='test',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        
+        queryset = Template.objects.filter(is_active=True)
+        filtered = Template.objects.filter_by_workflow(queryset, None)
+        
+        assert filtered.count() == 2
+    
+    def test_filter_by_role_returns_matching_templates(self):
+        """Test filter_by_role returns templates with specified role."""
+        Template.objects.create(
+            title='Developer Template',
+            content='test',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        Template.objects.create(
+            title='PM Template',
+            content='test',
+            agent_role='pm',
+            workflow_phase='planning',
+        )
+        
+        queryset = Template.objects.filter(is_active=True)
+        filtered = Template.objects.filter_by_role(queryset, 'developer')
+        
+        assert filtered.count() == 1
+        assert filtered.first().title == 'Developer Template'
+    
+    def test_filter_by_role_with_multi_role_template(self):
+        """Test filter_by_role finds templates where role is secondary."""
+        Template.objects.create(
+            title='Multi-Role Template',
+            content='test',
+            agent_role='developer',
+            agent_roles=['developer', 'architect'],
+            workflow_phase='development',
+        )
+        
+        queryset = Template.objects.filter(is_active=True)
+        filtered = Template.objects.filter_by_role(queryset, 'architect')
+        
+        assert filtered.count() == 1
+        assert filtered.first().title == 'Multi-Role Template'
+    
+    def test_combined_role_and_workflow_filtering(self):
+        """Test combining filter_by_role and filter_by_workflow."""
+        Template.objects.create(
+            title='Dev Planning',
+            content='test',
+            agent_role='developer',
+            workflow_phase='planning',
+        )
+        Template.objects.create(
+            title='Dev Development',
+            content='test',
+            agent_role='developer',
+            workflow_phase='development',
+        )
+        Template.objects.create(
+            title='PM Planning',
+            content='test',
+            agent_role='pm',
+            workflow_phase='planning',
+        )
+        
+        queryset = Template.objects.filter(is_active=True)
+        queryset = Template.objects.filter_by_workflow(queryset, 'planning')
+        queryset = Template.objects.filter_by_role(queryset, 'developer')
+        
+        assert queryset.count() == 1
+        assert queryset.first().title == 'Dev Planning'
+
+
+@pytest.mark.django_db
 class TestGeneratedPromptModel:
     """Tests for the GeneratedPrompt model."""
     

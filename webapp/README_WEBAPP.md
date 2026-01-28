@@ -93,8 +93,10 @@ The application supports all standard BMAD agent roles and workflow phases:
 
 The template library provides:
 - Card-based grid layout with responsive design
-- Filtering by agent role and workflow phase
-- Full-text search across titles and descriptions
+- **Agent Role Filtering**: Filter templates by BMAD agent role (supports multi-role templates)
+- **Workflow Phase Filtering**: Filter templates by planning or development phase
+- **Combined Filtering**: Use both filters together to narrow down results
+- Full-text search across titles, descriptions, and content
 - Template detail views with metadata
 - Variable detection and display
 
@@ -115,6 +117,7 @@ The Generate Document feature provides step-by-step document creation:
 - **Progress tracking**: Visual progress indicator showing completed/remaining steps
 - **Variable management**: Fill in required variables with validation
 - **Content suggestions**: Rule-based suggestions for improving content based on section type
+- **Filtering support**: Filter templates by agent role and workflow phase when selecting
 
 ### BMAD Validation
 
