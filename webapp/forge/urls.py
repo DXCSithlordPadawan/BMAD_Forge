@@ -8,24 +8,27 @@ from . import views
 app_name = 'forge'
 
 urlpatterns = [
+    # Health check endpoint (for monitoring)
+    path('health/', views.health_check, name='health_check'),
+
     # Dashboard
     path('', views.DashboardView.as_view(), name='dashboard'),
-    
+
     # Template URLs
     path('templates/', views.TemplateListView.as_view(), name='template_list'),
     path('templates/<int:pk>/', views.TemplateDetailView.as_view(), name='template_detail'),
-    
+
     # Prompt URLs
     path('generate/<int:template_id>/', views.PromptFormView.as_view(), name='prompt_form'),
     path('prompts/<int:pk>/', views.PromptResultView.as_view(), name='prompt_result'),
     path('prompts/history/', views.PromptHistoryView.as_view(), name='prompt_history'),
     path('prompts/<int:pk>/download/', views.download_prompt, name='download_prompt'),
-    
+
     # Document Generation URLs
     path('generate-document/', views.GenerateDocumentSelectView.as_view(), name='generate_document_select'),
     path('generate-document/<int:template_id>/', views.GenerateDocumentWizardView.as_view(), name='generate_document_wizard'),
     path('generate-document/<int:template_id>/validate/', views.validate_section_realtime, name='validate_section_realtime'),
-    
+
     # GitHub Sync URLs
     path('sync/', views.GitHubSyncView.as_view(), name='github_sync'),
     path('sync/manual/', views.manual_sync, name='manual_sync'),

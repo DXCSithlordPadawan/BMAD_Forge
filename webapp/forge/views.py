@@ -281,12 +281,41 @@ def download_prompt(request, pk):
 def health_check(request):
     """
     Health check endpoint for monitoring.
+    Checks database and cache connectivity.
+    Returns 200 for healthy, 503 for unhealthy.
     """
-    return JsonResponse({
+    from django.db import connection
+    from django.core.cache import cache
+
+    health_status = {
         'status': 'healthy',
         'app': settings.APP_NAME,
         'version': settings.APP_VERSION,
-    })
+        'checks': {}
+    }
+
+    # Check database connectivity
+    try:
+        connection.ensure_connection()
+        health_status['checks']['database'] = 'ok'
+    except Exception as e:
+        health_status['status'] = 'unhealthy'
+        health_status['checks']['database'] = f'error: {str(e)}'
+
+    # Check cache connectivity
+    try:
+        cache.set('health_check', 'ok', 10)
+        result = cache.get('health_check')
+        if result == 'ok':
+            health_status['checks']['cache'] = 'ok'
+        else:
+            health_status['checks']['cache'] = 'warning: not functioning'
+    except Exception as e:
+        health_status['checks']['cache'] = f'error: {str(e)}'
+
+    # Return 503 if unhealthy, 200 if healthy
+    status_code = 503 if health_status['status'] == 'unhealthy' else 200
+    return JsonResponse(health_status, status=status_code)
 
 
 class GenerateDocumentSelectView(ListView):
