@@ -139,14 +139,40 @@ bmad_forge/
 │   ├── services/         # Business logic
 │   │   ├── github_sync.py
 │   │   ├── template_parser.py
+│   │   ├── document_generator.py
 │   │   └── bmad_validator.py
-│   ├── templates/        # HTML templates
+│   ├── templates/        # HTML and prompt templates
+│   │   ├── forge/        # Django HTML templates
+│   │   └── agents/       # 15 BMAD prompt templates
 │   └── static/           # CSS and JavaScript
 └── tests/                # Test suite
     ├── test_models.py
     ├── test_views.py
-    └── test_services.py
+    ├── test_services.py
+    └── test_template_simulation.py
 ```
+
+## Included Templates
+
+The application includes 15 BMAD-compliant prompt templates in `forge/templates/agents/`:
+
+| Template | Description |
+|----------|-------------|
+| `architect_prompt.md` | System architect for technical blueprints |
+| `backend_prompt.md` | Senior backend engineer for server-side implementation |
+| `frontend_prompt.md` | Senior frontend engineer for UI implementation |
+| `devops_prompt.md` | DevOps & deployment engineer for infrastructure |
+| `productmanager_prompt.md` | Product manager for requirements |
+| `qa_prompt.md` | QA & test automation engineer |
+| `security_prompt.md` | Security analyst for vulnerability assessment |
+| `uxdesigner_prompt.md` | UX designer for user experience |
+| `generate_epics.md` | Epic and story generator from PRDs |
+| `prd_generate_epic_prompt.md` | PRD-based epic generation |
+| `phase1.md` | Architecture brainstorm (Phase 1) |
+| `phase2.md` | Phase 2 development workflow |
+| `phase3.md` | Phase 3 development workflow |
+| `selfdocagent_prompt.md` | Self-documentation agent |
+| `selfdocslashcommand_prompt.md` | Self-documenting slash command |
 
 ## Usage
 

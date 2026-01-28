@@ -37,8 +37,6 @@ This application implements the specifications defined in [BMAD_PRD.md](BMAD_PRD
 
 ### Supported BMAD Elements
 
-### Supported BMAD Elements
-
 **Agent Roles:**
 - Orchestrator - Coordination and oversight
 - Analyst - Requirements and data analysis  
@@ -51,6 +49,28 @@ This application implements the specifications defined in [BMAD_PRD.md](BMAD_PRD
 **Workflow Phases:**
 - Planning Phase - Requirements, analysis, estimation
 - Development Phase - Implementation, testing, deployment
+
+### Included Templates (15 Templates)
+
+The webapp includes 15 BMAD-compliant prompt templates located in `webapp/forge/templates/agents/`:
+
+| Template | Description |
+|----------|-------------|
+| `architect_prompt.md` | System architect for technical blueprints and architecture design |
+| `backend_prompt.md` | Senior backend engineer for server-side implementation |
+| `frontend_prompt.md` | Senior frontend engineer for UI implementation |
+| `devops_prompt.md` | DevOps & deployment engineer for infrastructure and CI/CD |
+| `productmanager_prompt.md` | Product manager for requirements and product planning |
+| `qa_prompt.md` | QA & test automation engineer for testing strategies |
+| `security_prompt.md` | Security analyst for vulnerability assessment |
+| `uxdesigner_prompt.md` | UX designer for user experience and design |
+| `generate_epics.md` | Epic and story generator from PRDs |
+| `prd_generate_epic_prompt.md` | PRD-based epic generation |
+| `phase1.md` | Architecture brainstorm agent (Phase 1 planning) |
+| `phase2.md` | Phase 2 development workflow |
+| `phase3.md` | Phase 3 development workflow |
+| `selfdocagent_prompt.md` | Self-documentation agent |
+| `selfdocslashcommand_prompt.md` | Self-documenting slash command agent |
 
 ## 🏗️ Architecture
 
@@ -65,14 +85,18 @@ This application implements the specifications defined in [BMAD_PRD.md](BMAD_PRD
 BMAD_Forge/
 ├── BMAD_PRD.md           # Product requirements document
 ├── README.md             # This file
-├── bmad_forge/           # Original development version
 └── webapp/              # Production web application ⭐
+    ├── README.md         # Quick start guide
     ├── README_WEBAPP.md  # Detailed setup guide
     ├── manage.py
     ├── requirements.txt
     ├── bmad_forge/      # Django project config
     ├── forge/           # Main application
-    └── tests/           # Test suite
+    │   ├── templates/
+    │   │   ├── forge/   # Django HTML templates
+    │   │   └── agents/  # 15 BMAD prompt templates ⭐
+    │   └── services/    # Business logic
+    └── tests/           # Test suite (includes template simulation tests)
 ```
 
 ## 📚 Documentation
