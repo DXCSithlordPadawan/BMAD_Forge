@@ -29,8 +29,8 @@ class Command(BaseCommand):
         parser.add_argument(
             '--path',
             type=str,
-            default='aitrg/templates',
-            help='Path to templates directory (default: aitrg/templates)',
+            default='webapp/forge/templates',
+            help='Path to templates directory (default: webapp/forge/templates)',
         )
         parser.add_argument(
             '--verbose',

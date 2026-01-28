@@ -92,7 +92,7 @@ After starting the server, sync templates from GitHub:
 - When a template already exists (matched by title), it is overwritten ensuring only one version shows
 - Configure sync behavior in `config.yaml` under `templates.sync`
 
-Default repository: `DXCSithlordPadawan/BMAD_Forge` (path: `aitrg/templates`)
+Default repository: `DXCSithlordPadawan/BMAD_Forge` (path: `webapp/forge/templates`)
 
 ## Configuration
 
@@ -114,7 +114,7 @@ templates:
   github:
     repository: "DXCSithlordPadawan/BMAD_Forge"
     branch: "main"
-    remote_path: "aitrg/templates"
+    remote_path: "webapp/forge/templates"
   
   # Sync behavior
   sync:
@@ -131,7 +131,7 @@ templates:
 | `templates.local_path` | Local template directory path | `forge/templates/agents` |
 | `templates.github.repository` | GitHub repo for templates | `DXCSithlordPadawan/BMAD_Forge` |
 | `templates.github.branch` | Git branch to sync from | `main` |
-| `templates.github.remote_path` | Path within repo for templates | `aitrg/templates` |
+| `templates.github.remote_path` | Path within repo for templates | `webapp/forge/templates` |
 | `templates.sync.overwrite_existing` | Overwrite existing templates on sync | `true` |
 | `templates.sync.match_by` | Field to match templates (`title` or `remote_path`) | `title` |
 

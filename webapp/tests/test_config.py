@@ -168,7 +168,7 @@ class TestConfigConvenienceFunctions:
     
     def test_get_template_github_path(self):
         """Test getting GitHub path."""
-        assert get_template_github_path() == 'aitrg/templates'
+        assert get_template_github_path() == 'webapp/forge/templates'
     
     def test_get_sync_overwrite_existing(self):
         """Test getting sync overwrite setting."""

@@ -148,7 +148,7 @@ templates:
   github:
     repository: "DXCSithlordPadawan/BMAD_Forge"
     branch: "main"
-    remote_path: "aitrg/templates"
+    remote_path: "webapp/forge/templates"
   
   # Template sync behavior
   sync:
