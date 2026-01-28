@@ -32,7 +32,7 @@ Your output will include:
 
 ---
 
-API Documentation
+# API Documentation
 Author:Your Name Here
 
 ---
