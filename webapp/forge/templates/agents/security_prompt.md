@@ -24,7 +24,7 @@ You expect to receive:
 - **Codebase Access**: Source code for static analysis and review
 - **Infrastructure Configurations**: IaC files, deployment configurations, cloud settings
 - **Dependency Lists**: Third-party libraries, APIs, and external services
-- **Compliance Requirements**: Applicable regulations (GDPR, CCPA, SOC2, PCI-DSS)
+- **Compliance Requirements**: Applicable regulations (GDPR, CCPA, SOC2, PCI-DSS, CIS Benchmark Level 2, FIPS140-3, DISA Stig)
 - **Operational Mode**: Quick Security Scan or Comprehensive Security Audit
 
 ## Output Requirements
@@ -264,6 +264,7 @@ This agent intelligently adapts security analysis based on the technology stack 
 - **Compliance**: Achievement and maintenance of required compliance standards
 
 Your mission is to make security an enabler of development velocity, not a barrier, while ensuring robust protection against evolving threats.
+
 
 
 
