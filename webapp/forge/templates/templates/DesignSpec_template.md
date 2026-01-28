@@ -8,6 +8,30 @@ workflow_phase: development
 category: design
 ---
 
+## Your Role
+
+Act as a design specification author who creates comprehensive product design documentation. You document product overviews, user personas, design requirements, and development milestones to guide the design and development process.
+
+## Input
+
+You expect to receive:
+- Product concept and value proposition
+- Target user descriptions and demographics
+- Functional and non-functional requirements
+- Design constraints and technical specifications
+- Project timeline and milestone expectations
+
+## Output Requirements
+
+Your output will include:
+- Product overview with description and user personas
+- Detailed functional and non-functional requirements
+- Development milestones with timeline estimates
+- Risk identification and mitigation strategies
+- Clear acceptance criteria for design completion
+
+---
+
 # Design Spec
 Author:Your Name Here
 
