@@ -222,7 +222,16 @@ Once loaded, templates can be queried by role:
 from forge.models import Template
 from django.db.models import Q
 
-# Get all templates for a specific role (checks agent_roles JSONField)
+# Method 1: Use primary role field (works on all databases)
+architect_templates = Template.objects.filter(agent_role='architect')
+
+# Method 2: Use helper method for checking multiple roles (works on all databases)
+# Filter in Python after fetching templates
+all_templates = Template.objects.all()
+architect_usable = [t for t in all_templates if t.has_role('architect')]
+
+# Method 3: JSONField contains lookup (PostgreSQL recommended)
+# Note: This syntax works best with PostgreSQL. For SQLite, consider Method 1 or 2.
 architect_templates = Template.objects.filter(agent_roles__contains=['architect'])
 
 # Get templates where architect is the primary role
@@ -232,19 +241,22 @@ primary_architect = Template.objects.filter(agent_role='architect')
 planning_templates = Template.objects.filter(workflow_phase='planning')
 
 # Combined filter - templates usable by PM in planning phase
-pm_planning = Template.objects.filter(
-    agent_roles__contains=['pm'],
-    workflow_phase='planning'
-)
+# Using primary role (database-agnostic):
+pm_planning = Template.objects.filter(agent_role='pm', workflow_phase='planning')
 
-# Check if a template has a specific role
+# Check if a template has a specific role using helper method
 template = Template.objects.first()
 if template.has_role('architect'):
     print(f"{template.title} can be used by architects")
 
 # Get human-readable roles display
 print(template.get_roles_display())  # e.g., "Architect, Developer"
+
+# Get all roles as a list
+roles = template.get_roles_list()  # e.g., ['architect', 'developer']
 ```
+
+> **Database Compatibility Note**: The `agent_roles__contains` lookup works best with PostgreSQL. For SQLite or other databases, use the `agent_role` field for filtering or use the `has_role()` helper method after fetching templates.
 
 ## Database Model
 

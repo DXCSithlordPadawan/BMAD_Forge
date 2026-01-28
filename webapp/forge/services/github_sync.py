@@ -179,6 +179,11 @@ class GitHubSyncService:
             Tuple of (frontmatter dict, remaining content)
         """
         frontmatter = {}
+        
+        # Handle None or empty content
+        if not content:
+            return frontmatter, content or ''
+        
         remaining_content = content
         
         # Check if content starts with frontmatter delimiter
@@ -196,8 +201,10 @@ class GitHubSyncService:
                 frontmatter_text = '\n'.join(lines[1:end_index])
                 try:
                     frontmatter = yaml.safe_load(frontmatter_text) or {}
-                except yaml.YAMLError:
-                    # If YAML parsing fails, return empty frontmatter
+                except yaml.YAMLError as e:
+                    # Log the error for debugging but continue with empty frontmatter
+                    import logging
+                    logging.warning(f"Failed to parse YAML frontmatter: {e}")
                     frontmatter = {}
                 
                 # Get the remaining content after frontmatter
@@ -234,6 +241,13 @@ class GitHubSyncService:
                 valid_detected = [r for r in roles if r in valid_roles]
                 if valid_detected:
                     return valid_detected
+                # If 'roles' was explicitly set but all values were invalid,
+                # log a warning and fall through to auto-detection
+                import logging
+                logging.warning(
+                    f"Template '{filename}' has 'roles' field with no valid roles: {roles}. "
+                    f"Valid roles are: {valid_roles}"
+                )
             elif isinstance(roles, str) and roles in valid_roles:
                 return [roles]
         

@@ -63,7 +63,7 @@ def load_templates():
                 }
             )
             
-            roles_display = ', '.join(agent_roles)
+            roles_display = ', '.join(agent_roles) if agent_roles else 'auto-detected'
             if created:
                 created_count += 1
                 print(f"  ✓ Created: {title} (roles: {roles_display})")

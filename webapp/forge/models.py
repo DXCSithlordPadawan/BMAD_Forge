@@ -102,10 +102,11 @@ class Template(models.Model):
     def save(self, *args, **kwargs):
         """Override save to auto-extract variables and sync agent_roles."""
         self.variables = self.extract_variables()
-        # Ensure agent_roles includes the primary agent_role
-        if self.agent_role and self.agent_role not in (self.agent_roles or []):
-            if not self.agent_roles:
-                self.agent_roles = []
+        # Ensure agent_roles is initialized and includes the primary agent_role
+        if self.agent_roles is None:
+            self.agent_roles = []
+        if self.agent_role and self.agent_role not in self.agent_roles:
+            # Add primary role at the beginning, preserving other roles
             self.agent_roles = [self.agent_role] + [r for r in self.agent_roles if r != self.agent_role]
         super().save(*args, **kwargs)
     
