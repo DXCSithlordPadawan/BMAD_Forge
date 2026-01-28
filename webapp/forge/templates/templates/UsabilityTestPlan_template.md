@@ -1,3 +1,13 @@
+---
+name: usability-test-plan-template
+description: Usability test plan template for planning and conducting user testing to evaluate product usability.
+roles:
+  - qa
+  - developer
+workflow_phase: development
+category: testing
+---
+
 # Usability Test Plan
 Author:Your Name Here
 

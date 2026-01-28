@@ -1,3 +1,11 @@
+---
+name: feature-request-template
+description: Feature request document template for proposing and documenting new product features.
+role: pm
+workflow_phase: planning
+category: product-management
+---
+
 # Feature Request Document
 Author:Your Name Here
 

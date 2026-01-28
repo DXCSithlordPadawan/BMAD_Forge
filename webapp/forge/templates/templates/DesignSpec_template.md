@@ -1,3 +1,13 @@
+---
+name: design-spec-template
+description: Design specification template for documenting product design, user personas, and UI/UX requirements.
+roles:
+  - developer
+  - architect
+workflow_phase: development
+category: design
+---
+
 # Design Spec
 Author:Your Name Here
 

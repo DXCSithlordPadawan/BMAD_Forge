@@ -1,3 +1,13 @@
+---
+name: user-story-mapping-template
+description: User story mapping template for organizing user stories into a visual representation of the user journey.
+roles:
+  - pm
+  - scrum_master
+workflow_phase: planning
+category: agile
+---
+
 # User Story Mapping
 Author:Your Name Here
 

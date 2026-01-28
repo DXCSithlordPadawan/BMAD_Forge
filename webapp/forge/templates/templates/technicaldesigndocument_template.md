@@ -1,3 +1,13 @@
+---
+name: technical-design-document-template
+description: Technical design document template for documenting system architecture, components, and implementation details.
+roles:
+  - architect
+  - developer
+workflow_phase: development
+category: technical
+---
+
 # Technical Design Document
 Author:Your Name Here
 

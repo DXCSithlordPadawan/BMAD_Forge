@@ -1,3 +1,13 @@
+---
+name: release-plan-template
+description: Release plan template for coordinating product releases, timelines, and go-to-market activities.
+roles:
+  - scrum_master
+  - pm
+workflow_phase: planning
+category: agile
+---
+
 # Release Plan
 Author:Your Name Here
 

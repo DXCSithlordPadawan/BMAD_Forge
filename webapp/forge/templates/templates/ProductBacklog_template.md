@@ -1,3 +1,13 @@
+---
+name: product-backlog-template
+description: Product backlog template for managing prioritized list of features, user stories, and tasks.
+roles:
+  - scrum_master
+  - pm
+workflow_phase: planning
+category: agile
+---
+
 # Product Backlog
 Author:Your Name Here
 

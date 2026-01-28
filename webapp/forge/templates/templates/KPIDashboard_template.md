@@ -1,3 +1,13 @@
+---
+name: kpi-dashboard-template
+description: KPI dashboard template for tracking and reporting key performance indicators and metrics.
+roles:
+  - pm
+  - analyst
+workflow_phase: planning
+category: product-management
+---
+
 # KPI Dashboard
 Author:Your Name Here
 
