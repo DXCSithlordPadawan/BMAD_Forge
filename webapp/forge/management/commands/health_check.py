@@ -11,6 +11,7 @@ Usage:
 from django.core.management.base import BaseCommand
 from django.db import connection
 from django.core.cache import cache
+from django.conf import settings
 import sys
 
 
@@ -39,6 +40,9 @@ class Command(BaseCommand):
             result = cache.get('health_check')
             if result == 'ok':
                 self.stdout.write(self.style.SUCCESS('✓ Cache: OK'))
+            elif settings.DEBUG and 'DummyCache' in str(settings.CACHES['default']['BACKEND']):
+                # DummyCache doesn't actually cache, so this is expected in development
+                self.stdout.write(self.style.SUCCESS('✓ Cache: OK (DummyCache in development)'))
             else:
                 self.stdout.write(self.style.WARNING('⚠ Cache: Not functioning properly'))
                 issues.append('Cache: Not returning expected values')

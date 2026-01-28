@@ -4,6 +4,9 @@ Tests for BMAD Forge views.
 
 import pytest
 from django.urls import reverse
+from django.test import override_settings
+from django.core.management import call_command
+from io import StringIO
 from forge.models import Template, GeneratedPrompt
 
 
@@ -325,3 +328,91 @@ class TestGenerateDocumentWizardView:
         # Should redirect to prompt result
         assert response.status_code == 302
         assert GeneratedPrompt.objects.filter(template=template).exists()
+
+
+@pytest.mark.django_db
+class TestHealthCheckView:
+    """Tests for the HTTP health check endpoint."""
+
+    def test_health_check_endpoint_healthy(self, client):
+        """Health check returns 200 when all systems operational."""
+        response = client.get(reverse('forge:health_check'))
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data['status'] == 'healthy'
+        assert 'checks' in data
+        assert 'database' in data['checks']
+        assert 'cache' in data['checks']
+
+    def test_health_check_includes_app_info(self, client):
+        """Health check includes application name and version."""
+        response = client.get(reverse('forge:health_check'))
+
+        data = response.json()
+        assert 'app' in data
+        assert 'version' in data
+
+    @override_settings(
+        DEBUG=True,
+        CACHES={
+            'default': {
+                'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            }
+        }
+    )
+    def test_health_check_with_dummy_cache_in_debug(self, client):
+        """Health check handles DummyCache gracefully in DEBUG mode."""
+        response = client.get(reverse('forge:health_check'))
+
+        assert response.status_code == 200
+        data = response.json()
+        # Should be OK even with DummyCache in development
+        assert 'cache' in data['checks']
+        assert 'ok' in data['checks']['cache'].lower()
+
+
+@pytest.mark.django_db
+class TestHealthCheckManagementCommand:
+    """Tests for the health_check management command."""
+
+    @override_settings(
+        CACHES={
+            'default': {
+                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+                'LOCATION': 'unique-snowflake',
+            }
+        }
+    )
+    def test_health_check_command_success(self):
+        """Management command succeeds when systems healthy."""
+        out = StringIO()
+
+        # Should exit with code 0 (success)
+        with pytest.raises(SystemExit) as exc_info:
+            call_command('health_check', stdout=out)
+
+        assert exc_info.value.code == 0
+        output = out.getvalue()
+        assert '✓ Database: OK' in output
+        assert '✓ Cache: OK' in output
+        assert 'HEALTH CHECK PASSED' in output
+
+    @override_settings(
+        DEBUG=True,
+        CACHES={
+            'default': {
+                'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            }
+        }
+    )
+    def test_health_check_command_with_dummy_cache(self):
+        """Management command handles DummyCache in development."""
+        out = StringIO()
+
+        with pytest.raises(SystemExit) as exc_info:
+            call_command('health_check', stdout=out)
+
+        assert exc_info.value.code == 0
+        output = out.getvalue()
+        assert 'Cache: OK' in output

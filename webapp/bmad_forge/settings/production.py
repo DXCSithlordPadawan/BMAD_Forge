@@ -18,7 +18,8 @@ from .base import *
 DEBUG = False
 
 # ALLOWED_HOSTS must be explicitly configured in production
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+_allowed_hosts = os.environ.get('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(',') if h.strip()]
 
 # Database - PostgreSQL for production
 # Supports DATABASE_URL format or individual components
@@ -114,7 +115,11 @@ try:
     MIDDLEWARE.append('csp.middleware.CSPMiddleware')
 
     CSP_DEFAULT_SRC = ("'self'",)
-    CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")  # Adjust based on your needs
+    # WARNING: 'unsafe-inline' weakens CSP protection against XSS attacks
+    # TODO: Remove 'unsafe-inline' and use nonces or hashes for inline scripts/styles
+    # For now, unsafe-inline is enabled for compatibility with existing templates
+    # Before removing, audit all inline scripts/styles in templates
+    CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")
     CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
     CSP_IMG_SRC = ("'self'", "data:", "https:")
     CSP_FONT_SRC = ("'self'",)
@@ -265,7 +270,7 @@ if 'SENTRY_DSN' in os.environ:
         }
         LOGGING['loggers']['django']['handlers'].append('sentry')
         LOGGING['loggers']['forge']['handlers'].append('sentry')
-    except:
+    except Exception:
         pass
 
 # Email configuration for production

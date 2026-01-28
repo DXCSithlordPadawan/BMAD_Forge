@@ -308,6 +308,9 @@ def health_check(request):
         result = cache.get('health_check')
         if result == 'ok':
             health_status['checks']['cache'] = 'ok'
+        elif settings.DEBUG and 'DummyCache' in str(settings.CACHES['default']['BACKEND']):
+            # DummyCache in development - this is expected
+            health_status['checks']['cache'] = 'ok (DummyCache)'
         else:
             health_status['checks']['cache'] = 'warning: not functioning'
     except Exception as e:
