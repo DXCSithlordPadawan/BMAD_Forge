@@ -42,7 +42,13 @@ def load_templates_from_directory(templates_dir, parser, sync_service):
         return created_count, updated_count
     
     # Process all .md files in the templates directory
-    for filename in os.listdir(templates_dir):
+    try:
+        filenames = os.listdir(templates_dir)
+    except OSError as e:
+        print(f"Error listing directory {templates_dir}: {e}")
+        return created_count, updated_count
+    
+    for filename in filenames:
         if not filename.endswith('.md'):
             continue
         
