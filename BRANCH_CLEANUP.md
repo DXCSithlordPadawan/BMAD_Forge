@@ -33,6 +33,9 @@ git push origin --delete copilot/close-external-branches
 ```bash
 gh api -X DELETE repos/DXCSithlordPadawan/BMAD_Forge/git/refs/heads/copilot/identify-aitrg-template-usage
 gh api -X DELETE repos/DXCSithlordPadawan/BMAD_Forge/git/refs/heads/copilot/update-code-analysis
+
+# After merging this PR, delete the current branch
+gh api -X DELETE repos/DXCSithlordPadawan/BMAD_Forge/git/refs/heads/copilot/close-external-branches
 ```
 
 ## Post-Cleanup Verification
