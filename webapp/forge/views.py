@@ -87,15 +87,8 @@ class TemplateListView(ListView):
                 models.Q(content__icontains=search)
             )
         
-        # Filter by role - handles multi-role templates
-        # Uses model's has_role method for cross-database compatibility
-        if agent_role:
-            # Get IDs of templates that have the specified role
-            matching_ids = [
-                template.id for template in queryset
-                if template.has_role(agent_role)
-            ]
-            queryset = queryset.filter(id__in=matching_ids)
+        # Filter by role - handles multi-role templates using the custom manager
+        queryset = Template.objects.filter_by_role(queryset, agent_role)
         
         return queryset
     
@@ -366,15 +359,8 @@ class GenerateDocumentSelectView(ListView):
                 models.Q(content__icontains=search)
             )
         
-        # Filter by role - handles multi-role templates
-        # Uses model's has_role method for cross-database compatibility
-        if agent_role:
-            # Get IDs of templates that have the specified role
-            matching_ids = [
-                template.id for template in queryset
-                if template.has_role(agent_role)
-            ]
-            queryset = queryset.filter(id__in=matching_ids)
+        # Filter by role - handles multi-role templates using the custom manager
+        queryset = Template.objects.filter_by_role(queryset, agent_role)
         
         return queryset
     

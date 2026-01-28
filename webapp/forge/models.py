@@ -9,11 +9,41 @@ import json
 import re
 
 
+class TemplateManager(models.Manager):
+    """Custom manager for Template model with multi-role filtering support."""
+    
+    def filter_by_role(self, queryset, role):
+        """
+        Filter templates by role, checking both agent_role and agent_roles fields.
+        
+        Uses Python-based filtering for cross-database compatibility (works with SQLite,
+        PostgreSQL, etc.) since JSONField contains lookup support varies by database.
+        
+        Args:
+            queryset: The queryset to filter
+            role: The role to filter by
+            
+        Returns:
+            Filtered queryset containing templates with the specified role
+        """
+        if not role:
+            return queryset
+            
+        matching_ids = [
+            template.id for template in queryset
+            if template.has_role(role)
+        ]
+        return queryset.filter(id__in=matching_ids)
+
+
 class Template(models.Model):
     """
     Represents a BMAD template synced from a GitHub repository.
     Contains metadata about agent roles, workflow phases, and template content.
     """
+    
+    # Custom manager
+    objects = TemplateManager()
     
     title = models.CharField(
         max_length=255,

@@ -180,7 +180,9 @@ class TestDashboardMultiRoles:
         assert templates_by_role.get('architect', 0) >= 1
 
 
-
+@pytest.mark.django_db
+class TestPromptFormView:
+    """Tests for the prompt generation form view."""
     
     def test_prompt_form_loads(self, client):
         """Test prompt form loads correctly."""
