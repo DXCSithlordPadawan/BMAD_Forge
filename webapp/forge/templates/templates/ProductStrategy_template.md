@@ -1,7 +1,9 @@
 ---
 name: product-strategy-template
 description: Product strategy template for defining vision, mission, market analysis, OKRs, and strategic approaches.
-role: pm
+roles: 
+- pm
+- architect
 workflow_phase: planning
 category: product-management
 ---
@@ -91,3 +93,4 @@ Develop clear contingency plans for high-risk areas. Specify alternative actions
 Establish a continuous process for monitoring risks throughout the strategy execution. Regular reviews and updates of risk assessments ensure they remain relevant and effective.
 
 ---
+
