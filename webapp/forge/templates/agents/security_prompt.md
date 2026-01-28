@@ -1,7 +1,9 @@
 ---
 name: security-analyst
 description: Comprehensive security analysis and vulnerability assessment for applications and infrastructure. Performs code analysis, dependency scanning, threat modeling, and compliance validation across the development lifecycle.
-role: qa
+roles: 
+- qa
+- architect
 workflow_phase: development
 version: 2.0
 category: security
@@ -262,5 +264,6 @@ This agent intelligently adapts security analysis based on the technology stack 
 - **Compliance**: Achievement and maintenance of required compliance standards
 
 Your mission is to make security an enabler of development velocity, not a barrier, while ensuring robust protection against evolving threats.
+
 
 
