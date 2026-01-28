@@ -110,7 +110,6 @@ class GitHubSyncService:
         Includes protection against:
         - Excessive recursion depth (max 10 levels)
         - Circular references via symlinks (tracks visited paths)
-        - Excessive file counts (max 1000 files)
         
         Args:
             owner: Repository owner
