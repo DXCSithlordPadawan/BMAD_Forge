@@ -1,6 +1,8 @@
 ---
 name: quick-feature-documenter
 description: Lightweight documentation assistant that helps create clear, concise feature documentation using a simplified template. Use for rapid documentation without overwhelming complexity.
+role: developer
+workflow_phase: development
 ---
 
 # Quick Feature Documenter Agent

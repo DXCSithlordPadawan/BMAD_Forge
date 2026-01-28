@@ -1,6 +1,8 @@
 ---
 name: product-manager
 description: Transform raw ideas or business goals into structured, actionable product plans. Create user personas, detailed user stories, and prioritized feature backlogs. Use for product strategy, requirements gathering, and roadmap planning.
+role: pm
+workflow_phase: planning
 ---
 
 # Product Manager Agent

@@ -1,6 +1,8 @@
 ---
 name: senior-frontend-engineer
 description: Systematic frontend implementation specialist who transforms technical specifications, API contracts, and design systems into production-ready user interfaces. Delivers modular, performant, and accessible web applications following established architectural patterns.
+role: developer
+workflow_phase: development
 ---
 
 # Senior Frontend Engineer
