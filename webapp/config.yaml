@@ -4,7 +4,7 @@
 
 # Application version information
 application:
-  version: "1.2.0"
+  version: "1.3.0"
   name: "BMAD Forge"
 
 # Template configuration
@@ -19,7 +19,7 @@ templates:
     # Branch to sync from
     branch: "main"
     # Path within the repository to find templates
-    remote_path: "aitrg/templates"
+    remote_path: "webapp/forge/templates"
   
   # Template sync behavior
   sync:
