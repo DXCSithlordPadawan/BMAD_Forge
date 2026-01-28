@@ -137,7 +137,8 @@ webapp/
 ├── requirements.txt       # Python dependencies
 ├── .env.example          # Environment variables template
 ├── .gitignore            # Git ignore patterns
-├── README.md             # This file
+├── README.md             # Quick start guide
+├── README_WEBAPP.md      # This file
 ├── load_local_templates.py  # Script to load templates
 ├── bmad_forge/           # Project configuration
 │   ├── settings.py       # Django settings
@@ -152,17 +153,74 @@ webapp/
 │   ├── services/        # Business logic
 │   │   ├── github_sync.py
 │   │   ├── template_parser.py
+│   │   ├── document_generator.py
 │   │   └── bmad_validator.py
 │   ├── templates/       # HTML templates and prompt templates
-│   │   ├── forge/       # Django HTML templates
-│   │   └── agents/      # BMAD prompt templates
-│   ├── static/          # CSS and JavaScript
-│   └── management/      # Management commands
+│   │   ├── forge/       # Django HTML templates (UI)
+│   │   ├── agents/      # BMAD prompt templates (15 core templates)
+│   │   └── templates/   # Extended document templates (PRD, roadmap, etc.)
+│   └── static/          # CSS and JavaScript
 └── tests/               # Test suite
     ├── test_models.py
     ├── test_views.py
-    └── test_services.py
+    ├── test_services.py
+    └── test_template_simulation.py  # Template simulation tests
 ```
+
+## Included Templates
+
+### Core Agent Templates (15 Templates)
+
+Located in `forge/templates/agents/`:
+
+#### Agent Role Templates
+| Template | Agent Role | Description |
+|----------|------------|-------------|
+| `architect_prompt.md` | Architect | System architecture design and technical blueprints |
+| `backend_prompt.md` | Developer | Senior backend engineer for server-side implementation |
+| `frontend_prompt.md` | Developer | Senior frontend engineer for UI implementation |
+| `devops_prompt.md` | Developer | DevOps & deployment engineer for infrastructure and CI/CD |
+| `productmanager_prompt.md` | Project Manager | Product planning and requirements documentation |
+| `qa_prompt.md` | QA Engineer | Test automation and quality assurance strategies |
+| `security_prompt.md` | Analyst | Security vulnerability assessment and compliance |
+| `uxdesigner_prompt.md` | Designer | UX design and user experience optimization |
+
+#### Workflow Templates
+| Template | Phase | Description |
+|----------|-------|-------------|
+| `phase1.md` | Planning | Architecture brainstorm and initial planning |
+| `phase2.md` | Development | Phase 2 development workflow |
+| `phase3.md` | Development | Phase 3 development workflow |
+| `generate_epics.md` | Planning | Epic and story generator from PRDs |
+| `prd_generate_epic_prompt.md` | Planning | PRD-based epic generation |
+
+#### Utility Templates
+| Template | Purpose |
+|----------|---------|
+| `selfdocagent_prompt.md` | Self-documentation agent for code documentation |
+| `selfdocslashcommand_prompt.md` | Self-documenting slash command integration |
+
+### Extended Document Templates
+
+Located in `forge/templates/templates/` - Additional document templates for product management:
+
+| Template | Description |
+|----------|-------------|
+| `PRD_template.md` | Product Requirements Document template |
+| `ProductRoadmap_template.md` | Product roadmap planning template |
+| `ProductStrategy_template.md` | Product strategy documentation |
+| `ProductBacklog_template.md` | Product backlog organization |
+| `FeatureRequestDocument_template.md` | Feature request documentation |
+| `MVPFeatureList_template.md` | MVP feature list planning |
+| `ReleasePlan_template.md` | Release planning template |
+| `UserStoryMapping_template.md` | User story mapping template |
+| `CustomerJourneyMap_template.md` | Customer journey mapping |
+| `DesignSpec_template.md` | Design specification template |
+| `UsabilityTestPlan_template.md` | Usability testing plan |
+| `APIDocumentation_template.md` | API documentation template |
+| `KPIDashboard_template.md` | KPI dashboard template |
+| `ProductSecurityAssessment_template.md` | Security assessment template |
+| `technicaldesigndocument_template.md` | Technical design document |
 
 ## Usage
 
