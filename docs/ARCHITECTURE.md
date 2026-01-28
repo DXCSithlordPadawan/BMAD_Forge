@@ -33,7 +33,9 @@
 ```
 BMAD_Forge/
 ├── webapp/                          # Django project root
+│   ├── config.yaml                  # Application configuration file
 │   ├── bmad_forge/                  # Project configuration
+│   │   ├── config.py                # Configuration loader
 │   │   ├── settings/                # Environment-specific settings
 │   │   │   ├── __init__.py          # Auto-detect environment
 │   │   │   ├── base.py              # Common settings
@@ -148,12 +150,52 @@ class GeneratedPrompt(models.Model):
 
 ## Service Layer
 
+### ConfigLoader
+
+Handles application configuration loading from `config.yaml` with environment variable overrides.
+
+**Configuration File Structure:**
+```yaml
+application:
+  version: "1.1.0"
+  name: "BMAD Forge"
+
+templates:
+  local_path: "forge/templates/agents"
+  github:
+    repository: "DXCSithlordPadawan/BMAD_Forge"
+    branch: "main"
+    remote_path: "aitrg/templates"
+  sync:
+    overwrite_existing: true
+    match_by: "title"
+```
+
+**Key Methods:**
+```python
+class ConfigLoader:
+    def load_config(reload: bool = False) -> Dict:
+        """Load configuration from config.yaml with caching"""
+
+    def get(key_path: str, default: Any = None) -> Any:
+        """Get config value by dot-separated path (e.g., 'application.version')"""
+
+    def reset() -> None:
+        """Reset cached configuration (useful for testing)"""
+```
+
+**Environment Override Precedence:**
+1. Environment variables (highest priority)
+2. config.yaml file values
+3. Default values in code (lowest priority)
+
 ### GitHubService
 
 Handles all GitHub API interactions.
 
 **Responsibilities:**
 - Fetch template files from repositories
+- Recursive directory traversal for templates in subfolders
 - Parse TOML frontmatter
 - Handle authentication (GitHub token)
 - Rate limit management
@@ -164,6 +206,9 @@ Handles all GitHub API interactions.
 class GitHubService:
     def fetch_templates(repo: str) -> List[Template]:
         """Fetch all templates from GitHub repository"""
+
+    def fetch_directory_contents_recursive(owner, repo, branch, path) -> List[Dict]:
+        """Recursively fetch all files from directory and subdirectories"""
 
     def fetch_file_content(url: str) -> str:
         """Fetch raw file content from GitHub"""

@@ -33,7 +33,8 @@ This application implements the specifications defined in [BMAD_PRD.md](BMAD_PRD
 - **Prompt Generation** - Variable substitution with validation
 - **BMAD Compliance** - Automated validation for required sections
 - **History Management** - Track and review generated prompts
-- **GitHub Sync** - Import templates from remote repositories
+- **GitHub Sync** - Import templates from remote repositories (recursive folder search)
+- **Config File** - Easy-to-edit YAML configuration for version and template settings
 
 ### Supported BMAD Elements
 
@@ -92,15 +93,17 @@ BMAD_Forge/
 └── webapp/              # Production web application ⭐
     ├── README.md         # Quick start guide
     ├── README_WEBAPP.md  # Detailed setup guide
+    ├── config.yaml       # Application configuration ⭐
     ├── manage.py
     ├── requirements.txt
     ├── bmad_forge/      # Django project config
+    │   └── config.py    # Configuration loader
     ├── forge/           # Main application
     │   ├── templates/
     │   │   ├── forge/   # Django HTML templates
     │   │   └── agents/  # 15 BMAD prompt templates ⭐
     │   └── services/    # Business logic
-    └── tests/           # Test suite (includes template simulation tests)
+    └── tests/           # Test suite (includes config tests)
 ```
 
 ## 📚 Documentation

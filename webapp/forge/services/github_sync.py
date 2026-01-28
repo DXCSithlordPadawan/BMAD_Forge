@@ -92,6 +92,33 @@ class GitHubSyncService:
             print(f"Error fetching directory {path}: {e}")
             return []
     
+    def fetch_directory_contents_recursive(self, owner: str, repo: str, branch: str, path: str) -> List[Dict]:
+        """
+        Recursively fetch the contents of a directory and all subdirectories from GitHub.
+        
+        Args:
+            owner: Repository owner
+            repo: Repository name
+            branch: Branch name
+            path: Directory path in the repository
+            
+        Returns:
+            List of all file information dictionaries (flattened from all subdirectories)
+        """
+        all_files = []
+        contents = self.fetch_directory_contents(owner, repo, branch, path)
+        
+        for item in contents:
+            if item.get('type') == 'file':
+                all_files.append(item)
+            elif item.get('type') == 'dir':
+                # Recursively fetch contents of subdirectory
+                subdir_path = item.get('path', '')
+                subdir_files = self.fetch_directory_contents_recursive(owner, repo, branch, subdir_path)
+                all_files.extend(subdir_files)
+        
+        return all_files
+    
     def detect_agent_role(self, content: str, filename: str) -> str:
         """
         Detect the BMAD agent role from template content or filename.
@@ -206,6 +233,11 @@ class GitHubSyncService:
         """
         Synchronize templates from a GitHub repository.
         
+        When a template already exists (matched by title or remote_path based on config),
+        the existing template is overwritten ensuring only one version shows in the database.
+        
+        Recursively searches the specified path and all subdirectories for template files.
+        
         Args:
             owner: Repository owner
             repo: Repository name
@@ -223,12 +255,15 @@ class GitHubSyncService:
             'templates': [],
         }
         
+        # Get sync settings from config
+        overwrite_existing = getattr(settings, 'TEMPLATE_SYNC_OVERWRITE', True)
+        match_by = getattr(settings, 'TEMPLATE_SYNC_MATCH_BY', 'title')
+        
         try:
-            contents = self.fetch_directory_contents(owner, repo, branch, path)
+            # Recursively fetch all files from the directory and subdirectories
+            contents = self.fetch_directory_contents_recursive(owner, repo, branch, path)
             
             for item in contents:
-                if item.get('type') != 'file':
-                    continue
                 
                 filename = item.get('name', '')
                 if not filename.endswith(('.md', '.txt', '.template')):
@@ -250,19 +285,41 @@ class GitHubSyncService:
                 # Build remote URL
                 remote_url = f"https://github.com/{owner}/{repo}/blob/{branch}/{item.get('path')}"
                 
-                # Create or update template
-                template, created = Template.objects.update_or_create(
-                    remote_path=item.get('path'),
-                    defaults={
-                        'title': title,
-                        'content': content,
-                        'agent_role': agent_role,
-                        'workflow_phase': workflow_phase,
-                        'remote_url': remote_url,
-                        'description': description,
-                        'is_active': True,
-                    }
-                )
+                # Prepare template data
+                template_data = {
+                    'content': content,
+                    'agent_role': agent_role,
+                    'workflow_phase': workflow_phase,
+                    'remote_url': remote_url,
+                    'remote_path': item.get('path'),
+                    'description': description,
+                    'is_active': True,
+                }
+                
+                # Handle template creation/update based on match_by setting
+                if overwrite_existing:
+                    if match_by == 'title':
+                        # Match by title - overwrite any template with the same title
+                        template_data['remote_path'] = item.get('path')
+                        template, created = Template.objects.update_or_create(
+                            title=title,
+                            defaults=template_data
+                        )
+                    else:
+                        # Match by remote_path (default behavior)
+                        template_data['title'] = title
+                        template, created = Template.objects.update_or_create(
+                            remote_path=item.get('path'),
+                            defaults=template_data
+                        )
+                else:
+                    # No overwrite - only create if doesn't exist
+                    template_data['title'] = title
+                    template_data['remote_path'] = item.get('path')
+                    template, created = Template.objects.get_or_create(
+                        title=title,
+                        defaults=template_data
+                    )
                 
                 if created:
                     results['created'] += 1
@@ -283,21 +340,26 @@ class GitHubSyncService:
     
     def sync_from_config(self) -> Dict:
         """
-        Sync templates using settings configuration.
+        Sync templates using settings configuration from config.yaml.
         
         Returns:
             Dictionary with sync results
         """
-        # Parse template repo from settings
-        repo_parts = settings.TEMPLATE_REPO.split('/')
+        # Get repository settings from config
+        repo = getattr(settings, 'TEMPLATE_GITHUB_REPO', None) or settings.TEMPLATE_REPO
+        branch = getattr(settings, 'TEMPLATE_GITHUB_BRANCH', 'main')
+        remote_path = getattr(settings, 'TEMPLATE_GITHUB_PATH', 'aitrg/templates')
+        
+        # Parse template repo
+        repo_parts = repo.split('/')
         if len(repo_parts) != 2:
             return {
                 'success': False,
                 'errors': ['Invalid TEMPLATE_REPO format. Expected: owner/repo'],
             }
         
-        owner, repo = repo_parts
-        return self.sync_templates(owner, repo, 'main', 'aitrg/templates')
+        owner, repo_name = repo_parts
+        return self.sync_templates(owner, repo_name, branch, remote_path)
 
 
 def sync_templates_from_github() -> Dict:
