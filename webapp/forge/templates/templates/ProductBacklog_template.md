@@ -56,7 +56,7 @@ This section offers an overview of the key features of the product, including sc
 - Continuously reassess priorities as business needs evolve.
 - Strike a balance between quick wins and long-term value.
 
---
+---
 
 ## Backlog Priority
 Organize backlog items based on their ROI to ensure the most valuable tasks are addressed first. High-priority items should closely align with strategic objectives and customer needs for optimal resource use.
