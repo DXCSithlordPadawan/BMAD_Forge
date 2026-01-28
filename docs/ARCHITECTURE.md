@@ -157,7 +157,7 @@ Handles application configuration loading from `config.yaml` with environment va
 **Configuration File Structure:**
 ```yaml
 application:
-  version: "1.1.0"
+  version: "1.2.0"
   name: "BMAD Forge"
 
 templates:
@@ -174,13 +174,16 @@ templates:
 **Key Methods:**
 ```python
 class ConfigLoader:
-    def load_config(reload: bool = False) -> Dict:
+    @classmethod
+    def load_config(cls, reload: bool = False) -> Dict:
         """Load configuration from config.yaml with caching"""
 
-    def get(key_path: str, default: Any = None) -> Any:
+    @classmethod
+    def get(cls, key_path: str, default: Any = None) -> Any:
         """Get config value by dot-separated path (e.g., 'application.version')"""
 
-    def reset() -> None:
+    @classmethod
+    def reset(cls) -> None:
         """Reset cached configuration (useful for testing)"""
 ```
 
@@ -195,7 +198,7 @@ Handles all GitHub API interactions.
 
 **Responsibilities:**
 - Fetch template files from repositories
-- Recursive directory traversal for templates in subfolders
+- Recursive directory traversal for templates in subfolders (with depth protection)
 - Parse TOML frontmatter
 - Handle authentication (GitHub token)
 - Rate limit management
@@ -203,11 +206,14 @@ Handles all GitHub API interactions.
 
 **Key Methods:**
 ```python
-class GitHubService:
-    def fetch_templates(repo: str) -> List[Template]:
+class GitHubSyncService:
+    def fetch_templates(self, repo: str) -> List[Template]:
         """Fetch all templates from GitHub repository"""
 
-    def fetch_directory_contents_recursive(owner, repo, branch, path) -> List[Dict]:
+    def fetch_directory_contents_recursive(
+        self, owner: str, repo: str, branch: str, path: str,
+        _current_depth: int = 0, _visited_paths: set = None
+    ) -> List[Dict]:
         """Recursively fetch all files from directory and subdirectories"""
 
     def fetch_file_content(url: str) -> str:

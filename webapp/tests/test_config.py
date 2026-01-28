@@ -44,7 +44,7 @@ class TestConfigLoader:
         
         config = ConfigLoader.load_config()
         
-        assert config['application']['version'] == '1.0.0'
+        assert config['application']['version'] == '1.2.0'
         assert config['application']['name'] == 'BMAD Forge'
     
     def test_load_config_from_yaml_file(self):
@@ -109,7 +109,7 @@ class TestConfigLoader:
         ConfigLoader.reset()
         ConfigLoader.set_config_path(Path('/nonexistent/config.yaml'))
         
-        assert ConfigLoader.get('application.version') == '1.0.0'
+        assert ConfigLoader.get('application.version') == '1.2.0'
         assert ConfigLoader.get('templates.github.branch') == 'main'
         assert ConfigLoader.get('nonexistent.key', 'default') == 'default'
     
@@ -148,7 +148,7 @@ class TestConfigConvenienceFunctions:
     
     def test_get_app_version(self):
         """Test getting app version."""
-        assert get_app_version() == '1.0.0'
+        assert get_app_version() == '1.2.0'
     
     def test_get_app_name(self):
         """Test getting app name."""

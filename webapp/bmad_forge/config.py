@@ -13,7 +13,7 @@ import yaml
 # Default configuration values
 DEFAULT_CONFIG = {
     'application': {
-        'version': '1.0.0',
+        'version': '1.2.0',
         'name': 'BMAD Forge',
     },
     'templates': {

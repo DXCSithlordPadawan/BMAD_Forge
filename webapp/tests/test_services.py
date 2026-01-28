@@ -254,6 +254,151 @@ More details here.
         
         assert service.token == 'test-token'
         assert 'Authorization' in service.headers
+    
+    def test_fetch_directory_contents_recursive_files_only(self):
+        """Test recursive fetch returns only files when directory has no subdirectories."""
+        service = GitHubSyncService()
+        
+        # Mock fetch_directory_contents to return files only
+        original_fetch = service.fetch_directory_contents
+        service.fetch_directory_contents = lambda o, r, b, p: [
+            {'name': 'file1.md', 'path': 'templates/file1.md', 'type': 'file'},
+            {'name': 'file2.md', 'path': 'templates/file2.md', 'type': 'file'},
+        ]
+        
+        result = service.fetch_directory_contents_recursive('owner', 'repo', 'main', 'templates')
+        
+        assert len(result) == 2
+        assert all(item['type'] == 'file' for item in result)
+        
+        # Restore original method
+        service.fetch_directory_contents = original_fetch
+    
+    def test_fetch_directory_contents_recursive_with_subdirectories(self):
+        """Test recursive fetch traverses subdirectories and returns all files."""
+        service = GitHubSyncService()
+        
+        # Track calls to verify recursion
+        call_paths = []
+        
+        def mock_fetch(owner, repo, branch, path):
+            call_paths.append(path)
+            if path == 'templates':
+                return [
+                    {'name': 'file1.md', 'path': 'templates/file1.md', 'type': 'file'},
+                    {'name': 'subdir', 'path': 'templates/subdir', 'type': 'dir'},
+                ]
+            elif path == 'templates/subdir':
+                return [
+                    {'name': 'file2.md', 'path': 'templates/subdir/file2.md', 'type': 'file'},
+                    {'name': 'nested', 'path': 'templates/subdir/nested', 'type': 'dir'},
+                ]
+            elif path == 'templates/subdir/nested':
+                return [
+                    {'name': 'file3.md', 'path': 'templates/subdir/nested/file3.md', 'type': 'file'},
+                ]
+            return []
+        
+        service.fetch_directory_contents = mock_fetch
+        
+        result = service.fetch_directory_contents_recursive('owner', 'repo', 'main', 'templates')
+        
+        # Should have 3 files from all levels
+        assert len(result) == 3
+        file_paths = [f['path'] for f in result]
+        assert 'templates/file1.md' in file_paths
+        assert 'templates/subdir/file2.md' in file_paths
+        assert 'templates/subdir/nested/file3.md' in file_paths
+        
+        # Verify all directories were traversed
+        assert 'templates' in call_paths
+        assert 'templates/subdir' in call_paths
+        assert 'templates/subdir/nested' in call_paths
+    
+    def test_fetch_directory_contents_recursive_empty_directory(self):
+        """Test recursive fetch handles empty directories gracefully."""
+        service = GitHubSyncService()
+        
+        service.fetch_directory_contents = lambda o, r, b, p: []
+        
+        result = service.fetch_directory_contents_recursive('owner', 'repo', 'main', 'templates')
+        
+        assert result == []
+    
+    def test_fetch_directory_contents_recursive_mixed_content(self):
+        """Test recursive fetch correctly filters files from mixed directory content."""
+        service = GitHubSyncService()
+        
+        def mock_fetch(owner, repo, branch, path):
+            if path == 'templates':
+                return [
+                    {'name': 'file1.md', 'path': 'templates/file1.md', 'type': 'file'},
+                    {'name': 'readme.txt', 'path': 'templates/readme.txt', 'type': 'file'},
+                    {'name': 'empty_subdir', 'path': 'templates/empty_subdir', 'type': 'dir'},
+                ]
+            elif path == 'templates/empty_subdir':
+                return []  # Empty subdirectory
+            return []
+        
+        service.fetch_directory_contents = mock_fetch
+        
+        result = service.fetch_directory_contents_recursive('owner', 'repo', 'main', 'templates')
+        
+        # Should have 2 files (empty subdir contributes nothing)
+        assert len(result) == 2
+        assert all(item['type'] == 'file' for item in result)
+    
+    def test_fetch_directory_contents_recursive_max_depth_protection(self):
+        """Test recursive fetch stops at maximum depth to prevent excessive recursion."""
+        service = GitHubSyncService()
+        
+        # Create a deeply nested structure that exceeds MAX_RECURSION_DEPTH
+        def mock_fetch(owner, repo, branch, path):
+            depth = path.count('/') + 1
+            return [
+                {'name': f'file_{depth}.md', 'path': f'{path}/file_{depth}.md', 'type': 'file'},
+                {'name': f'level_{depth + 1}', 'path': f'{path}/level_{depth + 1}', 'type': 'dir'},
+            ]
+        
+        service.fetch_directory_contents = mock_fetch
+        
+        result = service.fetch_directory_contents_recursive('owner', 'repo', 'main', 'level_0')
+        
+        # Should stop at MAX_RECURSION_DEPTH (10), so we get files from levels 0-9
+        assert len(result) <= service.MAX_RECURSION_DEPTH
+    
+    def test_fetch_directory_contents_recursive_circular_reference_protection(self):
+        """Test recursive fetch handles circular references (symlinks) gracefully."""
+        service = GitHubSyncService()
+        
+        call_count = [0]  # Use list to allow modification in nested function
+        
+        def mock_fetch(owner, repo, branch, path):
+            call_count[0] += 1
+            if call_count[0] > 20:  # Safety limit for test
+                return []
+            if path == 'templates':
+                return [
+                    {'name': 'file1.md', 'path': 'templates/file1.md', 'type': 'file'},
+                    {'name': 'subdir', 'path': 'templates/subdir', 'type': 'dir'},
+                ]
+            elif path == 'templates/subdir':
+                return [
+                    {'name': 'file2.md', 'path': 'templates/subdir/file2.md', 'type': 'file'},
+                    # Simulate circular reference back to parent
+                    {'name': 'link_to_templates', 'path': 'templates', 'type': 'dir'},
+                ]
+            return []
+        
+        service.fetch_directory_contents = mock_fetch
+        
+        result = service.fetch_directory_contents_recursive('owner', 'repo', 'main', 'templates')
+        
+        # Should complete without infinite loop
+        assert len(result) == 2  # Only file1.md and file2.md
+        file_paths = [f['path'] for f in result]
+        assert 'templates/file1.md' in file_paths
+        assert 'templates/subdir/file2.md' in file_paths
 
 
 class TestDocumentGenerator:

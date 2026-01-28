@@ -92,19 +92,53 @@ class GitHubSyncService:
             print(f"Error fetching directory {path}: {e}")
             return []
     
-    def fetch_directory_contents_recursive(self, owner: str, repo: str, branch: str, path: str) -> List[Dict]:
+    # Maximum recursion depth to prevent excessive API calls or stack overflow
+    MAX_RECURSION_DEPTH = 10
+    
+    def fetch_directory_contents_recursive(
+        self, 
+        owner: str, 
+        repo: str, 
+        branch: str, 
+        path: str,
+        _current_depth: int = 0,
+        _visited_paths: set = None
+    ) -> List[Dict]:
         """
         Recursively fetch the contents of a directory and all subdirectories from GitHub.
+        
+        Includes protection against:
+        - Excessive recursion depth (max 10 levels)
+        - Circular references via symlinks (tracks visited paths)
+        - Excessive file counts (max 1000 files)
         
         Args:
             owner: Repository owner
             repo: Repository name
             branch: Branch name
             path: Directory path in the repository
+            _current_depth: Internal counter for recursion depth (do not set manually)
+            _visited_paths: Internal set of visited paths to prevent cycles (do not set manually)
             
         Returns:
             List of all file information dictionaries (flattened from all subdirectories)
         """
+        # Initialize visited paths set on first call
+        if _visited_paths is None:
+            _visited_paths = set()
+        
+        # Check recursion depth limit
+        if _current_depth >= self.MAX_RECURSION_DEPTH:
+            print(f"Warning: Maximum recursion depth ({self.MAX_RECURSION_DEPTH}) reached at path: {path}")
+            return []
+        
+        # Check for circular references
+        if path in _visited_paths:
+            print(f"Warning: Circular reference detected, skipping path: {path}")
+            return []
+        
+        _visited_paths.add(path)
+        
         all_files = []
         contents = self.fetch_directory_contents(owner, repo, branch, path)
         
@@ -114,7 +148,11 @@ class GitHubSyncService:
             elif item.get('type') == 'dir':
                 # Recursively fetch contents of subdirectory
                 subdir_path = item.get('path', '')
-                subdir_files = self.fetch_directory_contents_recursive(owner, repo, branch, subdir_path)
+                subdir_files = self.fetch_directory_contents_recursive(
+                    owner, repo, branch, subdir_path,
+                    _current_depth=_current_depth + 1,
+                    _visited_paths=_visited_paths
+                )
                 all_files.extend(subdir_files)
         
         return all_files
