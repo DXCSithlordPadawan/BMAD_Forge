@@ -7,7 +7,8 @@ import requests
 import json
 import base64
 import re
-from typing import List, Dict, Optional
+import yaml
+from typing import List, Dict, Optional, Tuple
 from django.conf import settings
 from django.utils import timezone
 from ..models import Template
@@ -156,21 +157,150 @@ class GitHubSyncService:
         
         return all_files
     
-    def detect_agent_role(self, content: str, filename: str) -> str:
+    def parse_frontmatter(self, content: str) -> Tuple[Dict, str]:
         """
-        Detect the BMAD agent role from template content or filename.
+        Parse YAML frontmatter from template content.
+        
+        Templates can have YAML frontmatter delimited by --- at the start.
+        Example:
+            ---
+            name: my-template
+            description: My template description
+            role: developer
+            workflow_phase: development
+            ---
+            
+            Template content starts here...
+        
+        Args:
+            content: Template content with optional frontmatter
+            
+        Returns:
+            Tuple of (frontmatter dict, remaining content)
+        """
+        frontmatter = {}
+        
+        # Handle None or empty content
+        if not content:
+            return frontmatter, content or ''
+        
+        remaining_content = content
+        
+        # Check if content starts with frontmatter delimiter
+        if content.strip().startswith('---'):
+            lines = content.strip().split('\n')
+            # Find the closing delimiter
+            end_index = -1
+            for i, line in enumerate(lines[1:], start=1):
+                if line.strip() == '---':
+                    end_index = i
+                    break
+            
+            if end_index > 0:
+                # Extract and parse the frontmatter
+                frontmatter_text = '\n'.join(lines[1:end_index])
+                try:
+                    frontmatter = yaml.safe_load(frontmatter_text) or {}
+                except yaml.YAMLError as e:
+                    # Log the error for debugging but continue with empty frontmatter
+                    import logging
+                    logging.warning(f"Failed to parse YAML frontmatter: {e}")
+                    frontmatter = {}
+                
+                # Get the remaining content after frontmatter
+                remaining_content = '\n'.join(lines[end_index + 1:]).strip()
+        
+        return frontmatter, remaining_content
+    
+    def detect_agent_roles(self, content: str, filename: str) -> List[str]:
+        """
+        Detect all BMAD agent roles from template content or filename.
+        
+        Supports multiple roles via YAML frontmatter 'roles' field (list).
+        Falls back to single 'role' field or auto-detection.
+        
+        Priority order:
+        1. Check YAML frontmatter 'roles' field (list of roles)
+        2. Check YAML frontmatter 'role' field (single role)
+        3. Auto-detect from filename/content
         
         Args:
             content: Template content
             filename: Template filename
             
         Returns:
-            Detected agent role identifier
+            List of detected agent role identifiers
         """
+        valid_roles = [role[0] for role in settings.BMAD_AGENT_ROLES]
+        frontmatter, _ = self.parse_frontmatter(content)
+        
+        # 1. Check for 'roles' field (list of roles)
+        if 'roles' in frontmatter:
+            roles = frontmatter['roles']
+            if isinstance(roles, list):
+                valid_detected = [r for r in roles if r in valid_roles]
+                if valid_detected:
+                    return valid_detected
+                # If 'roles' was explicitly set but all values were invalid,
+                # log a warning and fall through to auto-detection
+                import logging
+                logging.warning(
+                    f"Template '{filename}' has 'roles' field with no valid roles: {roles}. "
+                    f"Valid roles are: {valid_roles}"
+                )
+            elif isinstance(roles, str) and roles in valid_roles:
+                return [roles]
+        
+        # 2. Check for single 'role' field
+        if frontmatter.get('role') in valid_roles:
+            return [frontmatter['role']]
+        
+        # 3. Fall back to auto-detection (returns single role)
+        detected = self.detect_agent_role(content, filename)
+        return [detected]
+    
+    def detect_agent_role(self, content: str, filename: str) -> str:
+        """
+        Detect the primary BMAD agent role from template content or filename.
+        
+        Priority order:
+        1. Check YAML frontmatter 'roles' field (first role in list)
+        2. Check YAML frontmatter 'role' field (recommended method)
+        3. Check filename patterns
+        4. Check content for role indicators
+        5. Default to 'developer'
+        
+        Args:
+            content: Template content
+            filename: Template filename
+            
+        Returns:
+            Detected agent role identifier (primary role)
+        """
+        # Valid roles from settings
+        valid_roles = [role[0] for role in settings.BMAD_AGENT_ROLES]
+        
+        # 1. Check frontmatter first (preferred method)
+        frontmatter, _ = self.parse_frontmatter(content)
+        
+        # Check for 'roles' list first (return first role as primary)
+        if 'roles' in frontmatter:
+            roles = frontmatter['roles']
+            if isinstance(roles, list) and roles:
+                first_role = roles[0]
+                if first_role in valid_roles:
+                    return first_role
+            elif isinstance(roles, str) and roles in valid_roles:
+                return roles
+        
+        # Check for single 'role' field
+        if frontmatter.get('role') in valid_roles:
+            return frontmatter['role']
+        
         content_lower = content.lower()
         filename_lower = filename.lower()
         
-        # Check filename patterns first
+        # 2. Check filename patterns
         if 'orchestrator' in filename_lower:
             return 'orchestrator'
         if 'analyst' in filename_lower:
@@ -186,7 +316,7 @@ class GitHubSyncService:
         if 'qa' in filename_lower or 'test' in filename_lower or 'quality' in filename_lower:
             return 'qa'
         
-        # Check content for role indicators
+        # 3. Check content for role indicators
         if '## Your Role' in content:
             role_section = content.split('## Your Role')[1].split('##')[0].lower()
             if 'orchestrator' in role_section:
@@ -204,12 +334,19 @@ class GitHubSyncService:
             if 'qa engineer' in role_section or 'quality assurance' in role_section:
                 return 'qa'
         
-        # Default to developer if no role detected
+        # 4. Default to developer if no role detected
         return 'developer'
     
     def detect_workflow_phase(self, content: str, filename: str) -> str:
         """
         Detect the BMAD workflow phase from template content or filename.
+        
+        Priority order:
+        1. Check YAML frontmatter 'workflow_phase' field (recommended method)
+        2. Check filename patterns
+        3. Check content for phase indicators
+        4. Keyword analysis
+        5. Default to 'development'
         
         Args:
             content: Template content
@@ -218,22 +355,30 @@ class GitHubSyncService:
         Returns:
             Detected workflow phase identifier
         """
+        # Valid phases from settings
+        valid_phases = [phase[0] for phase in settings.BMAD_WORKFLOW_PHASES]
+        
+        # 1. Check frontmatter first (preferred method)
+        frontmatter, _ = self.parse_frontmatter(content)
+        if frontmatter.get('workflow_phase') in valid_phases:
+            return frontmatter['workflow_phase']
+        
         filename_lower = filename.lower()
         content_lower = content.lower()
         
-        # Check filename patterns
+        # 2. Check filename patterns
         if 'planning' in filename_lower or 'plan' in filename_lower:
             return 'planning'
         if 'development' in filename_lower or 'dev' in filename_lower or 'sprint' in filename_lower:
             return 'development'
         
-        # Check content for phase indicators
+        # 3. Check content for phase indicators
         if 'planning phase' in content_lower:
             return 'planning'
         if 'development phase' in content_lower:
             return 'development'
         
-        # Check for typical planning vs development content
+        # 4. Check for typical planning vs development content
         planning_keywords = ['requirements', 'analysis', 'estimate', 'roadmap', 'backlog']
         development_keywords = ['implementation', 'code', 'feature', 'refactor', 'testing']
         
@@ -242,11 +387,17 @@ class GitHubSyncService:
         
         if planning_count > development_count:
             return 'planning'
+        
+        # 5. Default to development
         return 'development'
     
     def parse_template_description(self, content: str) -> str:
         """
         Extract description from template content.
+        
+        Priority order:
+        1. Check YAML frontmatter 'description' field (recommended method)
+        2. Extract from first few lines of content
         
         Args:
             content: Template content
@@ -254,7 +405,13 @@ class GitHubSyncService:
         Returns:
             Description string
         """
-        lines = content.strip().split('\n')
+        # 1. Check frontmatter first (preferred method)
+        frontmatter, remaining_content = self.parse_frontmatter(content)
+        if frontmatter.get('description'):
+            return frontmatter['description']
+        
+        # 2. Fallback to extracting from content
+        lines = remaining_content.strip().split('\n')
         description_lines = []
         
         for line in lines:
@@ -313,6 +470,7 @@ class GitHubSyncService:
                 
                 # Detect metadata
                 agent_role = self.detect_agent_role(content, filename)
+                agent_roles = self.detect_agent_roles(content, filename)
                 workflow_phase = self.detect_workflow_phase(content, filename)
                 description = self.parse_template_description(content)
                 
@@ -326,6 +484,7 @@ class GitHubSyncService:
                 template_data = {
                     'content': content,
                     'agent_role': agent_role,
+                    'agent_roles': agent_roles,
                     'workflow_phase': workflow_phase,
                     'remote_url': remote_url,
                     'remote_path': item.get('path'),
@@ -366,6 +525,7 @@ class GitHubSyncService:
                 results['templates'].append({
                     'title': template.title,
                     'agent_role': template.agent_role,
+                    'agent_roles': template.agent_roles,
                     'workflow_phase': template.workflow_phase,
                 })
         

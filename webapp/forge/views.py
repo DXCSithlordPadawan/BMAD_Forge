@@ -264,15 +264,15 @@ def manual_sync(request):
 
 def download_prompt(request, pk):
     """
-    Download generated prompt as a text file.
+    Download generated prompt as a Markdown file.
     """
     prompt = get_object_or_404(GeneratedPrompt, pk=pk)
     
     response = HttpResponse(
         prompt.final_output,
-        content_type='text/plain; charset=utf-8'
+        content_type='text/markdown; charset=utf-8'
     )
-    filename = f"bmad_prompt_{pk}_{prompt.created_at.strftime('%Y%m%d_%H%M%S')}.txt"
+    filename = f"bmad_prompt_{pk}_{prompt.created_at.strftime('%Y%m%d_%H%M%S')}.md"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
     return response

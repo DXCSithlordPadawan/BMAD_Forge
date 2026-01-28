@@ -25,7 +25,12 @@ class Template(models.Model):
     agent_role = models.CharField(
         max_length=50,
         choices=settings.BMAD_AGENT_ROLES,
-        help_text="BMAD agent role associated with this template"
+        help_text="Primary BMAD agent role associated with this template"
+    )
+    agent_roles = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of all BMAD agent roles that can use this template"
     )
     workflow_phase = models.CharField(
         max_length=50,
@@ -95,8 +100,14 @@ class Template(models.Model):
         return sorted(list(variables))
     
     def save(self, *args, **kwargs):
-        """Override save to auto-extract variables."""
+        """Override save to auto-extract variables and sync agent_roles."""
         self.variables = self.extract_variables()
+        # Ensure agent_roles is initialized and includes the primary agent_role
+        if self.agent_roles is None:
+            self.agent_roles = []
+        if self.agent_role and self.agent_role not in self.agent_roles:
+            # Add primary role at the beginning, preserving other roles
+            self.agent_roles = [self.agent_role] + [r for r in self.agent_roles if r != self.agent_role]
         super().save(*args, **kwargs)
     
     def get_variables_list(self):
@@ -104,6 +115,22 @@ class Template(models.Model):
         if isinstance(self.variables, str):
             return json.loads(self.variables)
         return self.variables or []
+    
+    def get_roles_list(self):
+        """Return all roles this template is associated with."""
+        if self.agent_roles:
+            return self.agent_roles
+        return [self.agent_role] if self.agent_role else []
+    
+    def get_roles_display(self):
+        """Return a human-readable string of all roles."""
+        role_dict = dict(settings.BMAD_AGENT_ROLES)
+        roles = self.get_roles_list()
+        return ', '.join(role_dict.get(r, r) for r in roles)
+    
+    def has_role(self, role: str) -> bool:
+        """Check if this template is associated with a specific role."""
+        return role in self.get_roles_list()
     
     def generate_prompt(self, **kwargs):
         """

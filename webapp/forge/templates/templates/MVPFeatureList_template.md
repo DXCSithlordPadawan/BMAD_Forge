@@ -1,3 +1,11 @@
+---
+name: mvp-feature-list-template
+description: MVP feature list template for defining and prioritizing minimum viable product features.
+role: pm
+workflow_phase: planning
+category: product-management
+---
+
 # MVP Feature List
 Author:Your Name Here
 

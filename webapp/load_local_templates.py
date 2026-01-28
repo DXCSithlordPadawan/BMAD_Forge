@@ -45,6 +45,7 @@ def load_templates():
             variables = parser.extract_variables_simple(content)
             description = sync_service.parse_template_description(content)
             agent_role = sync_service.detect_agent_role(content, filename)
+            agent_roles = sync_service.detect_agent_roles(content, filename)
             workflow_phase = sync_service.detect_workflow_phase(content, filename)
             
             # Check if template already exists
@@ -53,6 +54,7 @@ def load_templates():
                 defaults={
                     'content': content,
                     'agent_role': agent_role,
+                    'agent_roles': agent_roles,
                     'workflow_phase': workflow_phase,
                     'description': description or '',
                     'variables': variables,
@@ -61,12 +63,13 @@ def load_templates():
                 }
             )
             
+            roles_display = ', '.join(agent_roles) if agent_roles else 'auto-detected'
             if created:
                 created_count += 1
-                print(f"  ✓ Created: {title}")
+                print(f"  ✓ Created: {title} (roles: {roles_display})")
             else:
                 updated_count += 1
-                print(f"  ✓ Updated: {title}")
+                print(f"  ✓ Updated: {title} (roles: {roles_display})")
                 
         except Exception as e:
             print(f"  ✗ Error processing {filename}: {e}")

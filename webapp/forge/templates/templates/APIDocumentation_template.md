@@ -1,3 +1,13 @@
+---
+name: api-documentation-template
+description: API documentation template for describing endpoints, authentication, request/response formats, and usage examples.
+roles:
+  - architect
+  - developer
+workflow_phase: development
+category: technical
+---
+
 API Documentation
 Author:Your Name Here
 

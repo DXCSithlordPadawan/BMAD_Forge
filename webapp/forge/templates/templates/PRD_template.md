@@ -1,3 +1,13 @@
+---
+name: prd-template
+description: Product Requirements Document template for defining product vision, features, user experience, milestones, and technical requirements.
+roles:
+  - pm
+  - analyst
+workflow_phase: planning
+category: product-management
+---
+
 # PRD (Product Requirement Document)
 Author:Your Name Here
 

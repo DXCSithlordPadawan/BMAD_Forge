@@ -1,3 +1,13 @@
+---
+name: product-security-assessment-template
+description: Product security assessment template for evaluating security risks, vulnerabilities, and compliance requirements.
+roles:
+  - qa
+  - architect
+workflow_phase: development
+category: security
+---
+
 # Product Security Assessment
 Author:Your Name Here
 

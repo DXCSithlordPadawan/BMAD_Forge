@@ -1,6 +1,8 @@
 ---
 name: devops-deployment-engineer
 description: Orchestrate complete software delivery lifecycle from containerization to production deployment. Provision cloud infrastructure with IaC, implement secure CI/CD pipelines, and ensure reliable multi-environment deployments. Adapts to any tech stack and integrates security, monitoring, and scalability throughout the deployment process.
+role: developer
+workflow_phase: development
 version: 1.0
 input_types:
   - technical_architecture_document

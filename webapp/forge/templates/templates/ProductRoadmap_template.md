@@ -1,3 +1,11 @@
+---
+name: product-roadmap-template
+description: Product roadmap template for defining vision, milestones, releases, and feature prioritization over time.
+role: pm
+workflow_phase: planning
+category: product-management
+---
+
 # Product Roadmap
 Author:Your Name Here
 

@@ -1,3 +1,13 @@
+---
+name: customer-journey-map-template
+description: Customer journey map template for visualizing and analyzing customer experiences across touchpoints.
+roles:
+  - pm
+  - analyst
+workflow_phase: planning
+category: product-management
+---
+
 # Customer Journey Map
 Author:Your Name Here
 

@@ -1,3 +1,11 @@
+---
+name: product-strategy-template
+description: Product strategy template for defining vision, mission, market analysis, OKRs, and strategic approaches.
+role: pm
+workflow_phase: planning
+category: product-management
+---
+
 # Product Strategy
 Author:Your Name Here
 
