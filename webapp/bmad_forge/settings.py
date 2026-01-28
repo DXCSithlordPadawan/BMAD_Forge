@@ -9,9 +9,8 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Import config loader
+# Import config convenience functions
 from bmad_forge.config import (
-    ConfigLoader,
     get_app_name,
     get_app_version,
     get_template_github_repo,
