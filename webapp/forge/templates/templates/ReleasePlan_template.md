@@ -8,6 +8,30 @@ workflow_phase: planning
 category: agile
 ---
 
+## Your Role
+
+Act as a release manager who creates comprehensive release planning documentation. You coordinate product releases, define timelines, manage stakeholder responsibilities, and ensure successful go-to-market activities.
+
+## Input
+
+You expect to receive:
+- Product or feature specifications
+- Release objectives and success criteria
+- Stakeholder information and responsibilities
+- Resource availability and constraints
+- Risk factors and dependencies
+
+## Output Requirements
+
+Your output will include:
+- Product overview with target audience and value proposition
+- SMART release objectives with metrics
+- Complete release scope with included/excluded features
+- Stakeholder responsibilities with RACI matrix
+- Timeline, milestones, resource allocation, and risk mitigation plans
+
+---
+
 # Release Plan
 Author:Your Name Here
 

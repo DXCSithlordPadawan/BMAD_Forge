@@ -8,6 +8,30 @@ workflow_phase: development
 category: technical
 ---
 
+## Your Role
+
+Act as a technical architect who creates comprehensive technical design documents. You document system architecture, components, data structures, and implementation details to provide a clear blueprint for development teams.
+
+## Input
+
+You expect to receive:
+- Product requirements and specifications
+- System architecture constraints
+- Technology stack preferences
+- Performance and scalability requirements
+- Integration and deployment considerations
+
+## Output Requirements
+
+Your output will include:
+- Product overview with purpose, target audience, and expected outcomes
+- Design details including architecture, data structures, and interfaces
+- Comprehensive testing plan with strategies, tools, and test cases
+- Deployment plan with environment setup and verification steps
+- Documentation of algorithms, patterns, and design decisions
+
+---
+
 # Technical Design Document
 Author:Your Name Here
 
