@@ -1,7 +1,9 @@
 ---
 name: architecture-brainstorm
 description: Phase 1 planning agent that helps brainstorm overall application structure and architecture. Acts as a Senior Software Engineer with extensive experience in developing and building architecture for large-scale web applications.
-role: analyst
+roles: 
+- analyst
+- Architect
 workflow_phase: planning
 ---
 
@@ -122,5 +124,6 @@ I will use Posthog for analytics in my application
 I will use Stripe for payments in my application
 </current-tech-choices>
 </context>
+
 
 
