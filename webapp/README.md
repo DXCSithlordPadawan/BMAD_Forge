@@ -154,7 +154,8 @@ bmad_forge/
 
 ## Included Templates
 
-The application includes 15 BMAD-compliant prompt templates in `forge/templates/agents/`:
+### Core Agent Templates (`forge/templates/agents/`)
+The application includes 15 BMAD-compliant prompt templates:
 
 | Template | Description |
 |----------|-------------|
@@ -173,6 +174,9 @@ The application includes 15 BMAD-compliant prompt templates in `forge/templates/
 | `phase3.md` | Phase 3 development workflow |
 | `selfdocagent_prompt.md` | Self-documentation agent |
 | `selfdocslashcommand_prompt.md` | Self-documenting slash command |
+
+### Extended Document Templates (`forge/templates/templates/`)
+Additional templates for product management (PRD, roadmap, backlog, design specs, etc.)
 
 ## Usage
 

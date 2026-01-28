@@ -6,9 +6,28 @@ without errors and validates the document generation pipeline.
 
 import os
 import pytest
-from django.conf import settings
 from forge.models import Template
 from forge.services import TemplateParser, DocumentGenerator, BMADValidator
+
+
+# Define template list once for reuse across all parametrized tests
+TEMPLATE_FILES = [
+    "architect_prompt.md",
+    "backend_prompt.md",
+    "devops_prompt.md",
+    "frontend_prompt.md",
+    "generate_epics.md",
+    "phase1.md",
+    "phase2.md",
+    "phase3.md",
+    "prd_generate_epic_prompt.md",
+    "productmanager_prompt.md",
+    "qa_prompt.md",
+    "security_prompt.md",
+    "selfdocagent_prompt.md",
+    "selfdocslashcommand_prompt.md",
+    "uxdesigner_prompt.md",
+]
 
 
 class TestTemplateSimulation:
@@ -42,45 +61,13 @@ class TestTemplateSimulation:
         assert len(all_template_files) > 0, \
             "No template files found in agents directory"
 
-    @pytest.mark.parametrize("template_file", [
-        "architect_prompt.md",
-        "backend_prompt.md",
-        "devops_prompt.md",
-        "frontend_prompt.md",
-        "generate_epics.md",
-        "phase1.md",
-        "phase2.md",
-        "phase3.md",
-        "prd_generate_epic_prompt.md",
-        "productmanager_prompt.md",
-        "qa_prompt.md",
-        "security_prompt.md",
-        "selfdocagent_prompt.md",
-        "selfdocslashcommand_prompt.md",
-        "uxdesigner_prompt.md",
-    ])
+    @pytest.mark.parametrize("template_file", TEMPLATE_FILES)
     def test_template_file_exists(self, templates_directory, template_file):
         """Test that each expected template file exists."""
         filepath = os.path.join(templates_directory, template_file)
         assert os.path.exists(filepath), f"Template file not found: {template_file}"
 
-    @pytest.mark.parametrize("template_file", [
-        "architect_prompt.md",
-        "backend_prompt.md",
-        "devops_prompt.md",
-        "frontend_prompt.md",
-        "generate_epics.md",
-        "phase1.md",
-        "phase2.md",
-        "phase3.md",
-        "prd_generate_epic_prompt.md",
-        "productmanager_prompt.md",
-        "qa_prompt.md",
-        "security_prompt.md",
-        "selfdocagent_prompt.md",
-        "selfdocslashcommand_prompt.md",
-        "uxdesigner_prompt.md",
-    ])
+    @pytest.mark.parametrize("template_file", TEMPLATE_FILES)
     def test_template_loads_without_error(self, templates_directory, template_file):
         """Test that each template can be loaded and read without errors."""
         filepath = os.path.join(templates_directory, template_file)
@@ -91,23 +78,7 @@ class TestTemplateSimulation:
         assert content is not None
         assert len(content) > 0, f"Template {template_file} is empty"
 
-    @pytest.mark.parametrize("template_file", [
-        "architect_prompt.md",
-        "backend_prompt.md",
-        "devops_prompt.md",
-        "frontend_prompt.md",
-        "generate_epics.md",
-        "phase1.md",
-        "phase2.md",
-        "phase3.md",
-        "prd_generate_epic_prompt.md",
-        "productmanager_prompt.md",
-        "qa_prompt.md",
-        "security_prompt.md",
-        "selfdocagent_prompt.md",
-        "selfdocslashcommand_prompt.md",
-        "uxdesigner_prompt.md",
-    ])
+    @pytest.mark.parametrize("template_file", TEMPLATE_FILES)
     def test_template_parser_extracts_variables(self, templates_directory, template_file):
         """Test that the template parser can extract variables without errors."""
         filepath = os.path.join(templates_directory, template_file)
@@ -125,23 +96,7 @@ class TestTemplateSimulation:
         assert isinstance(variables_detailed, list), \
             f"extract_variables failed for {template_file}"
 
-    @pytest.mark.parametrize("template_file", [
-        "architect_prompt.md",
-        "backend_prompt.md",
-        "devops_prompt.md",
-        "frontend_prompt.md",
-        "generate_epics.md",
-        "phase1.md",
-        "phase2.md",
-        "phase3.md",
-        "prd_generate_epic_prompt.md",
-        "productmanager_prompt.md",
-        "qa_prompt.md",
-        "security_prompt.md",
-        "selfdocagent_prompt.md",
-        "selfdocslashcommand_prompt.md",
-        "uxdesigner_prompt.md",
-    ])
+    @pytest.mark.parametrize("template_file", TEMPLATE_FILES)
     def test_document_generator_extracts_sections(self, templates_directory, template_file):
         """Test that DocumentGenerator can extract sections without errors."""
         filepath = os.path.join(templates_directory, template_file)
@@ -153,24 +108,15 @@ class TestTemplateSimulation:
         sections = DocumentGenerator.extract_sections(content)
         assert isinstance(sections, list), \
             f"extract_sections failed for {template_file}"
+        
+        # Verify section objects have expected attributes
+        for section in sections:
+            assert hasattr(section, 'name'), \
+                f"Section missing 'name' attribute in {template_file}"
+            assert hasattr(section, 'content'), \
+                f"Section missing 'content' attribute in {template_file}"
 
-    @pytest.mark.parametrize("template_file", [
-        "architect_prompt.md",
-        "backend_prompt.md",
-        "devops_prompt.md",
-        "frontend_prompt.md",
-        "generate_epics.md",
-        "phase1.md",
-        "phase2.md",
-        "phase3.md",
-        "prd_generate_epic_prompt.md",
-        "productmanager_prompt.md",
-        "qa_prompt.md",
-        "security_prompt.md",
-        "selfdocagent_prompt.md",
-        "selfdocslashcommand_prompt.md",
-        "uxdesigner_prompt.md",
-    ])
+    @pytest.mark.parametrize("template_file", TEMPLATE_FILES)
     def test_document_generator_gets_wizard_steps(self, templates_directory, template_file):
         """Test that DocumentGenerator can generate wizard steps without errors."""
         filepath = os.path.join(templates_directory, template_file)
@@ -183,23 +129,7 @@ class TestTemplateSimulation:
         assert isinstance(steps, list), \
             f"get_wizard_steps failed for {template_file}"
 
-    @pytest.mark.parametrize("template_file", [
-        "architect_prompt.md",
-        "backend_prompt.md",
-        "devops_prompt.md",
-        "frontend_prompt.md",
-        "generate_epics.md",
-        "phase1.md",
-        "phase2.md",
-        "phase3.md",
-        "prd_generate_epic_prompt.md",
-        "productmanager_prompt.md",
-        "qa_prompt.md",
-        "security_prompt.md",
-        "selfdocagent_prompt.md",
-        "selfdocslashcommand_prompt.md",
-        "uxdesigner_prompt.md",
-    ])
+    @pytest.mark.parametrize("template_file", TEMPLATE_FILES)
     def test_template_validation(self, templates_directory, template_file):
         """Test that the template parser validates templates without errors."""
         filepath = os.path.join(templates_directory, template_file)
@@ -217,23 +147,7 @@ class TestTemplateSimulation:
         assert 'variables' in result
         assert 'sections' in result
 
-    @pytest.mark.parametrize("template_file", [
-        "architect_prompt.md",
-        "backend_prompt.md",
-        "devops_prompt.md",
-        "frontend_prompt.md",
-        "generate_epics.md",
-        "phase1.md",
-        "phase2.md",
-        "phase3.md",
-        "prd_generate_epic_prompt.md",
-        "productmanager_prompt.md",
-        "qa_prompt.md",
-        "security_prompt.md",
-        "selfdocagent_prompt.md",
-        "selfdocslashcommand_prompt.md",
-        "uxdesigner_prompt.md",
-    ])
+    @pytest.mark.parametrize("template_file", TEMPLATE_FILES)
     def test_simulate_document_generation(self, templates_directory, template_file):
         """
         Simulate complete document generation for each template.
@@ -258,7 +172,8 @@ class TestTemplateSimulation:
         # Step 4: Create mock section data
         section_data = {}
         for section in sections:
-            section_data[section.name] = f"Test content for section {section.name}"
+            if hasattr(section, 'name'):
+                section_data[section.name] = f"Test content for section {section.name}"
         
         # Step 5: Generate the document
         generated_doc, validations = DocumentGenerator.generate_document(
@@ -273,23 +188,7 @@ class TestTemplateSimulation:
         assert isinstance(validations, list), \
             f"Validations should be a list for {template_file}"
 
-    @pytest.mark.parametrize("template_file", [
-        "architect_prompt.md",
-        "backend_prompt.md",
-        "devops_prompt.md",
-        "frontend_prompt.md",
-        "generate_epics.md",
-        "phase1.md",
-        "phase2.md",
-        "phase3.md",
-        "prd_generate_epic_prompt.md",
-        "productmanager_prompt.md",
-        "qa_prompt.md",
-        "security_prompt.md",
-        "selfdocagent_prompt.md",
-        "selfdocslashcommand_prompt.md",
-        "uxdesigner_prompt.md",
-    ])
+    @pytest.mark.parametrize("template_file", TEMPLATE_FILES)
     def test_simulate_document_generation_with_variable_substitution(
         self, templates_directory, template_file
     ):
@@ -315,31 +214,18 @@ class TestTemplateSimulation:
             content, {}, mock_values
         )
         
-        # Check that variables were replaced
+        # Verify all provided variables were replaced using the service's method
         remaining_vars = TemplateParser.find_unreplaced_variables(generated_doc)
         
-        # Verify all provided variables were replaced
+        # Check that provided variables were replaced
         for var in mock_values:
-            assert f"{{{{" + var + "}}}}" not in generated_doc, \
-                f"Variable {{{{{var}}}}} was not replaced in {template_file}"
+            assert var not in remaining_vars, \
+                f"Variable '{var}' was not replaced in {template_file}"
+            # Also verify the replacement value appears in the document
+            assert mock_values[var] in generated_doc, \
+                f"Replacement value for '{var}' not found in {template_file}"
 
-    @pytest.mark.parametrize("template_file", [
-        "architect_prompt.md",
-        "backend_prompt.md",
-        "devops_prompt.md",
-        "frontend_prompt.md",
-        "generate_epics.md",
-        "phase1.md",
-        "phase2.md",
-        "phase3.md",
-        "prd_generate_epic_prompt.md",
-        "productmanager_prompt.md",
-        "qa_prompt.md",
-        "security_prompt.md",
-        "selfdocagent_prompt.md",
-        "selfdocslashcommand_prompt.md",
-        "uxdesigner_prompt.md",
-    ])
+    @pytest.mark.parametrize("template_file", TEMPLATE_FILES)
     def test_bmad_validator_processes_template(self, templates_directory, template_file):
         """Test that BMAD validator can process each template without errors."""
         filepath = os.path.join(templates_directory, template_file)
@@ -357,23 +243,7 @@ class TestTemplateSimulation:
         assert hasattr(report, 'missing_sections')
         assert hasattr(report, 'unreplaced_variables')
 
-    @pytest.mark.parametrize("template_file", [
-        "architect_prompt.md",
-        "backend_prompt.md",
-        "devops_prompt.md",
-        "frontend_prompt.md",
-        "generate_epics.md",
-        "phase1.md",
-        "phase2.md",
-        "phase3.md",
-        "prd_generate_epic_prompt.md",
-        "productmanager_prompt.md",
-        "qa_prompt.md",
-        "security_prompt.md",
-        "selfdocagent_prompt.md",
-        "selfdocslashcommand_prompt.md",
-        "uxdesigner_prompt.md",
-    ])
+    @pytest.mark.parametrize("template_file", TEMPLATE_FILES)
     def test_document_compliance_validation(self, templates_directory, template_file):
         """Test document compliance validation for each template."""
         filepath = os.path.join(templates_directory, template_file)
@@ -398,27 +268,6 @@ class TestTemplateListIntegrity:
     """Tests to verify template list integrity in the application."""
 
     @pytest.fixture
-    def expected_templates(self):
-        """Expected templates in the agents directory."""
-        return [
-            "architect_prompt.md",
-            "backend_prompt.md",
-            "devops_prompt.md",
-            "frontend_prompt.md",
-            "generate_epics.md",
-            "phase1.md",
-            "phase2.md",
-            "phase3.md",
-            "prd_generate_epic_prompt.md",
-            "productmanager_prompt.md",
-            "qa_prompt.md",
-            "security_prompt.md",
-            "selfdocagent_prompt.md",
-            "selfdocslashcommand_prompt.md",
-            "uxdesigner_prompt.md",
-        ]
-
-    @pytest.fixture
     def templates_directory(self):
         """Get the path to the agents templates directory."""
         return os.path.join(
@@ -426,29 +275,29 @@ class TestTemplateListIntegrity:
             'forge', 'templates', 'agents'
         )
 
-    def test_all_expected_templates_exist(self, templates_directory, expected_templates):
+    def test_all_expected_templates_exist(self, templates_directory):
         """Verify all expected templates exist in the directory."""
-        for template_file in expected_templates:
+        for template_file in TEMPLATE_FILES:
             filepath = os.path.join(templates_directory, template_file)
             assert os.path.exists(filepath), \
                 f"Expected template not found: {template_file}"
 
-    def test_no_unexpected_templates(self, templates_directory, expected_templates):
+    def test_no_unexpected_templates(self, templates_directory):
         """Verify there are no unexpected templates in the directory."""
         actual_files = [f for f in os.listdir(templates_directory) if f.endswith('.md')]
         
         for actual_file in actual_files:
-            assert actual_file in expected_templates, \
+            assert actual_file in TEMPLATE_FILES, \
                 f"Unexpected template found: {actual_file}"
 
-    def test_template_count_matches(self, templates_directory, expected_templates):
+    def test_template_count_matches(self, templates_directory):
         """Verify the template count matches expected."""
         actual_files = [f for f in os.listdir(templates_directory) if f.endswith('.md')]
-        assert len(actual_files) == len(expected_templates), \
-            f"Template count mismatch: expected {len(expected_templates)}, found {len(actual_files)}"
+        assert len(actual_files) == len(TEMPLATE_FILES), \
+            f"Template count mismatch: expected {len(TEMPLATE_FILES)}, found {len(actual_files)}"
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 class TestTemplatesDatabaseLoading:
     """Tests for loading templates into the database."""
 
@@ -464,7 +313,7 @@ class TestTemplatesDatabaseLoading:
         """Test that all templates can be loaded into the database."""
         from forge.services import GitHubSyncService
         
-        parser = TemplateParser()
+        # GitHubSyncService uses class methods that don't require a token
         sync_service = GitHubSyncService()
         
         for filename in os.listdir(templates_directory):
@@ -476,9 +325,9 @@ class TestTemplatesDatabaseLoading:
             with open(filepath, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # Parse template metadata
+            # Parse template metadata using class methods
             title = filename.replace('.md', '').replace('_', ' ').title()
-            variables = parser.extract_variables_simple(content)
+            variables = TemplateParser.extract_variables_simple(content)
             description = sync_service.parse_template_description(content)
             agent_role = sync_service.detect_agent_role(content, filename)
             workflow_phase = sync_service.detect_workflow_phase(content, filename)

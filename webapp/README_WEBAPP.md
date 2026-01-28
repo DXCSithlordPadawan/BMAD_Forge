@@ -156,9 +156,9 @@ webapp/
 │   │   ├── document_generator.py
 │   │   └── bmad_validator.py
 │   ├── templates/       # HTML templates and prompt templates
-│   │   ├── forge/       # Django HTML templates
-│   │   ├── agents/      # BMAD prompt templates (15 templates)
-│   │   └── templates/   # Additional templates
+│   │   ├── forge/       # Django HTML templates (UI)
+│   │   ├── agents/      # BMAD prompt templates (15 core templates)
+│   │   └── templates/   # Extended document templates (PRD, roadmap, etc.)
 │   └── static/          # CSS and JavaScript
 └── tests/               # Test suite
     ├── test_models.py
@@ -169,9 +169,11 @@ webapp/
 
 ## Included Templates
 
-The application includes 15 BMAD-compliant prompt templates in `forge/templates/agents/`:
+### Core Agent Templates (15 Templates)
 
-### Agent Role Templates
+Located in `forge/templates/agents/`:
+
+#### Agent Role Templates
 | Template | Agent Role | Description |
 |----------|------------|-------------|
 | `architect_prompt.md` | Architect | System architecture design and technical blueprints |
@@ -183,7 +185,7 @@ The application includes 15 BMAD-compliant prompt templates in `forge/templates/
 | `security_prompt.md` | Analyst | Security vulnerability assessment and compliance |
 | `uxdesigner_prompt.md` | Designer | UX design and user experience optimization |
 
-### Workflow Templates
+#### Workflow Templates
 | Template | Phase | Description |
 |----------|-------|-------------|
 | `phase1.md` | Planning | Architecture brainstorm and initial planning |
@@ -192,11 +194,33 @@ The application includes 15 BMAD-compliant prompt templates in `forge/templates/
 | `generate_epics.md` | Planning | Epic and story generator from PRDs |
 | `prd_generate_epic_prompt.md` | Planning | PRD-based epic generation |
 
-### Utility Templates
+#### Utility Templates
 | Template | Purpose |
 |----------|---------|
 | `selfdocagent_prompt.md` | Self-documentation agent for code documentation |
 | `selfdocslashcommand_prompt.md` | Self-documenting slash command integration |
+
+### Extended Document Templates
+
+Located in `forge/templates/templates/` - Additional document templates for product management:
+
+| Template | Description |
+|----------|-------------|
+| `PRD_template.md` | Product Requirements Document template |
+| `ProductRoadmap_template.md` | Product roadmap planning template |
+| `ProductStrategy_template.md` | Product strategy documentation |
+| `ProductBacklog_template.md` | Product backlog organization |
+| `FeatureRequestDocument_template.md` | Feature request documentation |
+| `MVPFeatureList_template.md` | MVP feature list planning |
+| `ReleasePlan_template.md` | Release planning template |
+| `UserStoryMapping_template.md` | User story mapping template |
+| `CustomerJourneyMap_template.md` | Customer journey mapping |
+| `DesignSpec_template.md` | Design specification template |
+| `UsabilityTestPlan_template.md` | Usability testing plan |
+| `APIDocumentation_template.md` | API documentation template |
+| `KPIDashboard_template.md` | KPI dashboard template |
+| `ProductSecurityAssessment_template.md` | Security assessment template |
+| `technicaldesigndocument_template.md` | Technical design document |
 
 ## Usage
 

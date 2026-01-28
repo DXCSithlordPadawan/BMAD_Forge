@@ -50,10 +50,11 @@ This application implements the specifications defined in [BMAD_PRD.md](BMAD_PRD
 - Planning Phase - Requirements, analysis, estimation
 - Development Phase - Implementation, testing, deployment
 
-### Included Templates (15 Templates)
+### Included Templates (15 Core Templates + 15 Extended Templates)
 
-The webapp includes 15 BMAD-compliant prompt templates located in `webapp/forge/templates/agents/`:
+The webapp includes BMAD-compliant prompt templates located in `webapp/forge/templates/`:
 
+#### Core Agent Templates (`agents/`)
 | Template | Description |
 |----------|-------------|
 | `architect_prompt.md` | System architect for technical blueprints and architecture design |
@@ -71,6 +72,9 @@ The webapp includes 15 BMAD-compliant prompt templates located in `webapp/forge/
 | `phase3.md` | Phase 3 development workflow |
 | `selfdocagent_prompt.md` | Self-documentation agent |
 | `selfdocslashcommand_prompt.md` | Self-documenting slash command agent |
+
+#### Extended Document Templates (`templates/`)
+Additional templates for product management including PRD, roadmap, backlog, and design specification templates.
 
 ## 🏗️ Architecture
 
