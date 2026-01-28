@@ -61,7 +61,9 @@
                             <div>
                                 <h6 class="mb-1">{{ template.title }}</h6>
                                 <small class="text-muted">
-                                    <span class="badge bg-secondary">{{ template.agent_role|upper }}</span>
+                                    {% for role in template.get_roles_list %}
+                                    <span class="badge bg-secondary">{{ role|upper }}</span>
+                                    {% endfor %}
                                     <span class="badge bg-dark border">{{ template.workflow_phase|title }}</span>
                                 </small>
                             </div>
