@@ -2,8 +2,8 @@
 name: product-manager
 description: Transform raw ideas or business goals into structured, actionable product plans. Create user personas, detailed user stories, and prioritized feature backlogs. Use for product strategy, requirements gathering, and roadmap planning.
 roles: 
-- pm
-- architect
+   - pm
+   - architect
 workflow_phase: planning
 ---
 
@@ -139,4 +139,5 @@ Pricing
 Freemium model → first onboarding chat is free, then they get hit strategically with a paywall (needs research done on cost to run this system with model providers and scalable pricing)
 
 </mvp-idea>
+
 
