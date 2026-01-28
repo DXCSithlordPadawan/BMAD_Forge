@@ -534,3 +534,55 @@ Return formatted output.
         assert report['is_compliant'] is False
         assert 'role_name' in report['unreplaced_variables']
         assert 'input_data' in report['unreplaced_variables']
+
+
+class TestLoadLocalTemplates:
+    """Tests for load_local_templates.py script functionality."""
+    
+    @staticmethod
+    def _get_template_directories():
+        """Helper to import TEMPLATE_DIRECTORIES from load_local_templates module."""
+        import sys
+        import os
+        
+        # Add webapp to path to import the module
+        webapp_path = os.path.join(os.path.dirname(__file__), '..')
+        if webapp_path not in sys.path:
+            sys.path.insert(0, webapp_path)
+        
+        from load_local_templates import TEMPLATE_DIRECTORIES
+        return TEMPLATE_DIRECTORIES
+    
+    def test_template_directories_constant_contains_both_directories(self):
+        """Test that TEMPLATE_DIRECTORIES includes both agents and templates directories."""
+        template_dirs = self._get_template_directories()
+        
+        assert 'forge/templates/agents' in template_dirs
+        assert 'forge/templates/templates' in template_dirs
+        assert len(template_dirs) == 2
+    
+    def test_template_directories_exist(self):
+        """Test that all configured template directories exist on disk."""
+        import os
+        
+        base_dir = os.path.join(os.path.dirname(__file__), '..')
+        template_dirs = self._get_template_directories()
+        
+        for template_dir in template_dirs:
+            full_path = os.path.join(base_dir, template_dir)
+            assert os.path.exists(full_path), f"Template directory should exist: {full_path}"
+            assert os.path.isdir(full_path), f"Should be a directory: {full_path}"
+    
+    def test_template_directories_contain_md_files(self):
+        """Test that both template directories contain markdown files."""
+        import os
+        
+        base_dir = os.path.join(os.path.dirname(__file__), '..')
+        template_dirs = self._get_template_directories()
+        min_count = 10  # Each directory should have at least 10 template files
+        
+        for template_dir in template_dirs:
+            full_path = os.path.join(base_dir, template_dir)
+            md_files = [f for f in os.listdir(full_path) if f.endswith('.md')]
+            assert len(md_files) >= min_count, \
+                f"Directory {template_dir} should have at least {min_count} .md files, found {len(md_files)}"

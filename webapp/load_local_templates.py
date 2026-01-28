@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Script to load templates from local directory into the database.
+Script to load templates from local directories into the database.
 """
 import os
 import sys
@@ -15,21 +15,40 @@ from forge.models import Template
 from forge.services.template_parser import TemplateParser
 from forge.services.github_sync import GitHubSyncService
 
-def load_templates():
-    """Load templates from the local templates directory."""
-    templates_dir = os.path.join(os.path.dirname(__file__), 'forge', 'templates', 'agents')
+# Directories containing templates to load
+TEMPLATE_DIRECTORIES = [
+    'forge/templates/agents',
+    'forge/templates/templates',
+]
+
+
+def load_templates_from_directory(templates_dir, parser, sync_service):
+    """
+    Load templates from a single directory.
     
-    if not os.path.exists(templates_dir):
-        print(f"Templates directory not found: {templates_dir}")
-        return
-    
-    parser = TemplateParser()
-    sync_service = GitHubSyncService()
+    Args:
+        templates_dir: Path to the directory containing templates
+        parser: TemplateParser instance
+        sync_service: GitHubSyncService instance
+        
+    Returns:
+        Tuple of (created_count, updated_count)
+    """
     created_count = 0
     updated_count = 0
     
+    if not os.path.exists(templates_dir):
+        print(f"Templates directory not found: {templates_dir}")
+        return created_count, updated_count
+    
     # Process all .md files in the templates directory
-    for filename in os.listdir(templates_dir):
+    try:
+        filenames = os.listdir(templates_dir)
+    except OSError as e:
+        print(f"Error listing directory {templates_dir}: {e}")
+        return created_count, updated_count
+    
+    for filename in filenames:
         if not filename.endswith('.md'):
             continue
         
@@ -74,9 +93,32 @@ def load_templates():
         except Exception as e:
             print(f"  ✗ Error processing {filename}: {e}")
     
+    return created_count, updated_count
+
+
+def load_templates():
+    """Load templates from all configured local template directories."""
+    base_dir = os.path.dirname(__file__)
+    parser = TemplateParser()
+    sync_service = GitHubSyncService()
+    total_created = 0
+    total_updated = 0
+    
+    for template_dir in TEMPLATE_DIRECTORIES:
+        templates_dir = os.path.join(base_dir, template_dir)
+        print(f"\nLoading templates from: {template_dir}")
+        print("-" * 50)
+        
+        created, updated = load_templates_from_directory(
+            templates_dir, parser, sync_service
+        )
+        total_created += created
+        total_updated += updated
+    
     print(f"\n✓ Completed!")
-    print(f"  Created: {created_count}")
-    print(f"  Updated: {updated_count}")
+    print(f"  Total Created: {total_created}")
+    print(f"  Total Updated: {total_updated}")
+
 
 if __name__ == '__main__':
     load_templates()
