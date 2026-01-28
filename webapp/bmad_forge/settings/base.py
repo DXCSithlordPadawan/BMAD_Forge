@@ -100,13 +100,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Application settings
 APP_NAME = os.environ.get('APP_NAME', 'BMAD Forge')
-APP_VERSION = os.environ.get('APP_VERSION', '1.0.0')
+APP_VERSION = os.environ.get('APP_VERSION', '1.1.0')
 
 # GitHub settings
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 GITHUB_RAW_BASE_URL = os.environ.get('GITHUB_RAW_BASE_URL', 'https://raw.githubusercontent.com')
 BMAD_METHOD_REPO = os.environ.get('BMAD_METHOD_REPO', 'bmadcode/BMAD-METHOD-v5')
-TEMPLATE_REPO = os.environ.get('TEMPLATE_REPO', 'DXCSithlordPadawan/training')
+TEMPLATE_REPO = os.environ.get('TEMPLATE_REPO', 'DXCSithlordPadawan/BMAD_Forge')
 
 # BMAD Framework settings
 BMAD_AGENT_ROLES = [
