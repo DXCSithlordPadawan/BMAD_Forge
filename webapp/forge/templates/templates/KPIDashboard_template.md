@@ -12,7 +12,7 @@ List the primary metrics essential to your product's success. These may include 
 ### Current Status
 Detail the present state of these key metrics with real-time data. Include a brief commentary on trends, anomalies, and insights for each indicator, highlighting what’s going well and areas that need attention.
 
---
+---
 
 ## Detailed KPI Analysis
 This section delves into the specific areas of your product's performance metrics. By breaking down each KPI, you gain a better understanding of contributing factors, uncover patterns, and identify trends. Analyze data such as feature usage, user flow, and segmentation.
