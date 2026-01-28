@@ -3,7 +3,7 @@ name: epic-story-generator
 description: Agent that transforms PRDs into lightweight epics and user stories. Specializes in breaking down features into clear, non-duplicative epics and stories with core functional and non-functional requirements.
 roles: 
   - pm
-  - Archtitect
+  - archtitect
 workflow_phase: planning
 ---
 
