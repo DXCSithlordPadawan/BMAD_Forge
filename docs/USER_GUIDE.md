@@ -96,14 +96,35 @@ The Template Library displays all available BMAD templates in a grid layout.
 
 ### Filtering Options
 
-- **Agent Role**: Filter by role (Orchestrator, Analyst, PM, Architect, etc.)
-- **Workflow Phase**: Filter by phase (Planning, Development)
-- **Search**: Full-text search across template titles, descriptions, and content
+BMAD Forge provides powerful filtering capabilities to help you quickly find the right template:
+
+#### Agent Role Filter
+Filter templates by BMAD agent role. This filter supports multi-role templates, meaning if a template is associated with multiple roles, it will appear when filtering by any of those roles.
+
+Available roles:
+- **Orchestrator**: Coordination and oversight
+- **Analyst**: Requirements and data analysis
+- **Project Manager (PM)**: Planning and tracking
+- **Architect**: System design and architecture
+- **Scrum Master**: Agile process facilitation
+- **Developer**: Implementation and coding
+- **QA Engineer**: Testing and quality assurance
+
+#### Workflow Phase Filter
+Filter templates by the BMAD workflow phase they belong to:
+- **Planning Phase**: Requirements gathering, architecture design, and task planning
+- **Development Phase**: Implementation, testing, and deployment
+
+#### Search
+Full-text search across template titles, descriptions, and content. Simply enter keywords to find templates that match your search terms.
+
+#### Combined Filtering
+All filters work together, allowing you to narrow down templates by combining multiple criteria. For example, you can filter for "Developer" role templates in the "Development" phase that contain "API" in their content.
 
 ### Template Cards
 
 Each template card displays:
-- Agent role badge
+- Agent role badges (all roles for multi-role templates)
 - Workflow phase badge
 - Template title
 - Brief description

@@ -78,8 +78,9 @@ class TemplateListView(ListView):
         workflow_phase = self.request.GET.get('workflow_phase')
         search = self.request.GET.get('search')
         
-        if workflow_phase:
-            queryset = queryset.filter(workflow_phase=workflow_phase)
+        # Filter by workflow phase using the custom manager
+        queryset = Template.objects.filter_by_workflow(queryset, workflow_phase)
+        
         if search:
             queryset = queryset.filter(
                 models.Q(title__icontains=search) |
@@ -350,8 +351,9 @@ class GenerateDocumentSelectView(ListView):
         workflow_phase = self.request.GET.get('workflow_phase')
         search = self.request.GET.get('search')
         
-        if workflow_phase:
-            queryset = queryset.filter(workflow_phase=workflow_phase)
+        # Filter by workflow phase using the custom manager
+        queryset = Template.objects.filter_by_workflow(queryset, workflow_phase)
+        
         if search:
             queryset = queryset.filter(
                 models.Q(title__icontains=search) |
