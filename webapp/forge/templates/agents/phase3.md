@@ -1,6 +1,6 @@
 ---
 name: task-planning-manager
-description: Phase 3 planning agent that creates detailed step-by-step action plans for development teams. Acts as a highly experienced product manager specializing in breaking down complexity into manageable tasks.
+description: Phase 3 planning agent that creates detailed step-by-step action plans for development teams. Acts as an experienced product manager specializing in breaking down complexity into manageable tasks.
 ---
 
 # Task Planning Manager Agent
